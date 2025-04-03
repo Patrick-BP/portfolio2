@@ -8,14 +8,14 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
-import { SupabaseProvider } from "./lib/supabase";
+import { AuthProvider } from "./lib/authContext";
 import BlogPost from "./pages/blogPost";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <SupabaseProvider>
+    <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -30,7 +30,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </SupabaseProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

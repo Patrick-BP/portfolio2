@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSupabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/authContext';
 import { ProjectForm } from '@/components/dashboard/ProjectForm';
 import { BlogForm } from '@/components/dashboard/BlogForm';
 import { MessagesList } from '@/components/dashboard/MessagesList';
@@ -14,7 +14,7 @@ import { Loader2, Code, FileText, MessageSquare, Briefcase, Clock, User } from '
 import {fetchMessages} from '@/lib/apis'; // Assuming you have a function to fetch messages
 
 const Dashboard = () => {
-  const { isLoading, isAuthenticated, signOut } = useSupabase();
+  const { isLoading, isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -47,8 +47,8 @@ const Dashboard = () => {
   }
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    await logout();
+    navigate('/auth');
   };
 
   return (

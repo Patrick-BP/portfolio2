@@ -1,7 +1,7 @@
 
-import { useState } from 'react';
+import { useState , useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSupabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/authContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,7 @@ const formSchema = z.object({
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const { signInWithEmail, signUpWithEmail, isAuthenticated } = useSupabase();
+  const { login,  isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   // Initialize form
@@ -34,19 +34,18 @@ const Auth = () => {
   });
 
   // If already authenticated, redirect to dashboard
-  if (isAuthenticated) {
-    navigate('/dashboard');
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
       if (mode === 'login') {
-        await signInWithEmail(values.email, values.password);
-      } else {
-        await signUpWithEmail(values.email, values.password);
-      }
+        await login(values.email, values.password, navigate);
+      } 
     } catch (error) {
       console.error('Authentication error:', error);
       toast.error(mode === 'login' 
@@ -121,7 +120,7 @@ const Auth = () => {
             </form>
           </Form>
           
-          <div className="mt-4 text-center text-sm">
+          {/* <div className="mt-4 text-center text-sm">
             {mode === 'login' ? (
               <p>
                 Don't have an account?{' '}
@@ -145,7 +144,7 @@ const Auth = () => {
                 </button>
               </p>
             )}
-          </div>
+          </div> */}
         </CardContent>
         <CardFooter className="flex justify-center text-center text-sm text-muted-foreground">
           <p>Secure authentication for your portfolio dashboard</p>

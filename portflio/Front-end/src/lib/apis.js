@@ -1,12 +1,17 @@
 
 import axios from "axios";
 
+const BASE_URL = "http://localhost:3000/api";
+const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${localStorage.getItem("token")}`,
 
+};
 //============================= APIs for Users =============================//
 //===============================================================================//
 const fetchUsers = async ()=>{
     try {
-        const response = await axios.get(`http://localhost:3000/api/users`);
+        const response = await axios.get(`${BASE_URL}/users`);
         return response.data.data[0];
 
     } catch (error) {
@@ -15,12 +20,14 @@ const fetchUsers = async ()=>{
     }
 };
 
+
+
 //============================= APIs for Skills =============================//
 //===============================================================================//
 
 const fetchSkills = async ()=>{
     try {
-        const response = await axios.get(`http://localhost:3000/api/skills`);
+        const response = await axios.get(`${BASE_URL}/skills`);
         return response.data.data;
     } catch (error) {
         console.error('Error fetching skills:', error);
@@ -29,7 +36,7 @@ const fetchSkills = async ()=>{
 };
 const updateSkill = async (id, updatedSkill)=>{
     try {
-        const response = await axios.patch(`http://localhost:3000/api/skills/${id}`, updatedSkill);
+        const response = await axios.patch(`${BASE_URL}/skills/${id}`,updatedSkill, {headers});
         return response.data.data;
     } catch (error) {
         console.error('Error updating skill:', error);
@@ -38,7 +45,8 @@ const updateSkill = async (id, updatedSkill)=>{
 }
 const deleteSkill = async (id)=>{
     try {
-        const response = await axios.delete(`http://localhost:3000/api/skills/${id}`);
+        const response = await axios.delete(`${BASE_URL}/skills/${id}`,{headers});
+        // Check if the response is successful
         return response.data.data;
     } catch (error) {
         console.error('Error deleting skill:', error);
@@ -47,7 +55,7 @@ const deleteSkill = async (id)=>{
 }
 const createSkill = async (newSkill)=>{
     try {
-        const response = await axios.post(`http://localhost:3000/api/skills`, newSkill);
+        const response = await axios.post(`${BASE_URL}/skills`, newSkill, {headers});
         return response.data.data;
     } catch (error) {
         console.error('Error creating skill:', error);
@@ -60,7 +68,7 @@ const createSkill = async (newSkill)=>{
 //===============================================================================//    
 const fetchProfile = async ()=>{
     try {
-        const response = await axios.get(`http://localhost:3000/api/profiles/`);
+        const response = await axios.get(`${BASE_URL}/profiles/`);
         return response.data.data[0];
     } catch (error) {
         console.error('Error fetching profile:', error);
@@ -69,7 +77,11 @@ const fetchProfile = async ()=>{
 };
 const updateProfile = async (id, updateData)=>{
     try {
-        const response = await axios.patch(`http://localhost:3000/api/profiles/${id}`, updateData);
+        const response = await axios.patch(`${BASE_URL}/profiles/${id}`,updateData, {
+            headers: {
+            'Content-Type': 'multipart/form-data',
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },}  );
         return response.data.data;
     } catch (error) {
         console.error('Error updating profile:', error);
@@ -84,7 +96,7 @@ const updateProfile = async (id, updateData)=>{
 //===============================================================================//
 const fetchProjects = async ()=>{
     try {
-        const response = await axios.get(`http://localhost:3000/api/projects`);
+        const response = await axios.get(`${BASE_URL}/projects`);
         return response.data.data;
     } catch (error) {
         console.error('Error fetching projects:', error);
@@ -121,9 +133,10 @@ const updateProject = async (id, updateData) => {
         // Note: PATCH with multipart/form-data might not be universally supported by backends/servers.
         // Alternatives: Use PUT, or use POST with a method override header/field (e.g., _method=PATCH).
         // Check your backend framework's documentation.
-        const response = await axios.patch(`http://localhost:3000/api/projects/${id}`, formData, {
+        const response = await axios.patch(`${BASE_URL}/projects/${id}`, formData, {
              headers: {
                 'Content-Type': 'multipart/form-data',
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return response.data.data;
@@ -134,7 +147,7 @@ const updateProject = async (id, updateData) => {
 };
 const deleteProject = async (id)=>{
     try {
-        const response = await axios.delete(`http://localhost:3000/api/projects/${id}`);
+        const response = await axios.delete(`${BASE_URL}/projects/${id}`,{headers});
         return response.data.data;
     } catch (error) {
         console.error('Error deleting project:', error);
@@ -166,9 +179,10 @@ const createProject = async (projectData) => {
     }
 
     try {
-        const response = await axios.post(`http://localhost:3000/api/projects`, formData, {
+        const response = await axios.post(`${BASE_URL}/projects`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data', // Important for file uploads
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return response.data.data;
@@ -183,7 +197,7 @@ const createProject = async (projectData) => {
 //===============================================================================//
 const fetchPosts = async ()=>{
     try {
-        const response = await axios.get(`http://localhost:3000/api/blogposts`);
+        const response = await axios.get(`${BASE_URL}/blogposts`);
         return response.data.data;
     } catch (error) {
         console.error('Error fetching posts:', error);
@@ -192,7 +206,7 @@ const fetchPosts = async ()=>{
 };
 const fetchPost = async (id)=>{
     try {
-        const response = await axios.get(`http://localhost:3000/api/blogposts/${id}`);
+        const response = await axios.get(`${BASE_URL}/blogposts/${id}`);
         return response.data.data;
     } catch (error) {
         console.error('Error fetching post:', error);
@@ -201,9 +215,10 @@ const fetchPost = async (id)=>{
 };
 const updatePost = async (id, updatedPost)=>{
     try {
-        const response = await axios.patch(`http://localhost:3000/api/blogposts/${id}`, updatedPost, {
+        const response = await axios.patch(`${BASE_URL}/blogposts/${id}`, updatedPost, {
             headers: {
                 'Content-Type': 'multipart/form-data', // Important for file uploads
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return response.data.data;
@@ -215,7 +230,7 @@ const updatePost = async (id, updatedPost)=>{
 
 const deletePost = async (id)=>{
     try {
-        const response = await axios.delete(`http://localhost:3000/api/blogposts/${id}`);
+        const response = await axios.delete(`${BASE_URL}/blogposts/${id}`);
         return response.data.data;
     } catch (error) {
         console.error('Error deleting post:', error);
@@ -224,9 +239,10 @@ const deletePost = async (id)=>{
 };
 const createPost = async (newPost)=>{
     try {
-        const response = await axios.post(`http://localhost:3000/api/blogposts`, newPost, {
+        const response = await axios.post(`${BASE_URL}/blogposts`, newPost, {
             headers: {
                 'Content-Type': 'multipart/form-data', // Important for file uploads
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },});
         return response.data.data;
     } catch (error) {
@@ -241,7 +257,7 @@ const createPost = async (newPost)=>{
 //===============================================================================//
 const fetchTimeLine = async ()=>{
     try {
-        const response = await axios.get(`http://localhost:3000/api/timeline`);
+        const response = await axios.get(`${BASE_URL}/timeline`);
         return response.data.data;
     } catch (error) {
         console.error('Error fetching timeline:', error);
@@ -250,9 +266,10 @@ const fetchTimeLine = async ()=>{
 };
 const updateTimeLine = async (timelineItems)=>{
     try {
-        const response = await axios.patch(`http://localhost:3000/api/timeline`, timelineItems,{
+        const response = await axios.patch(`${BASE_URL}/timeline`, timelineItems,{
             headers: {
                 'Content-Type': 'multipart/form-data',
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
         return response.data.data;
@@ -263,7 +280,7 @@ const updateTimeLine = async (timelineItems)=>{
 };
 const deleteTimeLine = async (id)=>{
     try {
-        const response = await axios.delete(`http://localhost:3000/api/timeline/${id}`);
+        const response = await axios.delete(`${BASE_URL}/timeline/${id}`);
         return response.data.data;
     } catch (error) {
         console.error('Error deleting timeline:', error);
@@ -275,11 +292,7 @@ const deleteTimeLine = async (id)=>{
 //===============================================================================//
 const createMessage = async (newMessage)=>{
     try {
-        const response = await axios.post(`http://localhost:3000/api/contactmessages`, newMessage, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await axios.post(`${BASE_URL}/contactmessages`, newMessage, { headers});
         return response.data.data;
     } catch (error) {
         console.error('Error creating message:', error);
@@ -289,7 +302,7 @@ const createMessage = async (newMessage)=>{
 
 const fetchMessages = async ()=>{
     try {
-        const response = await axios.get(`http://localhost:3000/api/contactmessages`);
+        const response = await axios.get(`${BASE_URL}/contactmessages`, { headers});
         return response.data.data;
     } catch (error) {
         console.error('Error fetching messages:', error);
@@ -299,11 +312,8 @@ const fetchMessages = async ()=>{
 const updateMessage = async (id, data)=>{
 
     try {
-        const response = await axios.patch(`http://localhost:3000/api/contactmessages/${id}`, data, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await axios.patch(`${BASE_URL}/contactmessages/${id}`, data, { headers});
+        
         return response.data.data;
     } catch (error) {
         console.error('Error updating message:', error);
@@ -313,7 +323,7 @@ const updateMessage = async (id, data)=>{
 
 const deleteMessage = async (id)=>{
     try {
-        const response = await axios.delete(`http://localhost:3000/api/contactmessages/${id}`);
+        const response = await axios.delete(`${BASE_URL}/contactmessages/${id}`, { headers});
         return response.data.data;
     } catch (error) {
         console.error('Error deleting message:', error);

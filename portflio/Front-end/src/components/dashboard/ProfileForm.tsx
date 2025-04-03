@@ -16,7 +16,7 @@ interface ProfileData {
   phone: string;
   location: string;
   bio: string;
-  avatarUrl: string;
+  avatar: string;
   linkedin: string;
   github: string;
   twitter: string;
@@ -34,7 +34,7 @@ export const ProfileForm = () => {
     phone: '',
     location: '',
     bio: '',
-    avatarUrl: '',
+    avatar: '',
     linkedin: '',
     github: '',
     twitter: '',
@@ -58,7 +58,7 @@ export const ProfileForm = () => {
             phone: data.phone || '',
             location: data.location || '',
             bio: data.bio || '',
-            avatarUrl: data.avatar || '',
+            avatar: data.avatar || '',
             linkedin: data.linkedin || '',
             github: data.github || '',
             twitter: data.twitter || '',
@@ -111,14 +111,14 @@ export const ProfileForm = () => {
 
     setAvatarFile(file);
     const imageUrl = URL.createObjectURL(file);
-    handleInputChange('avatarUrl', imageUrl);
+    handleInputChange('avatar', imageUrl);
   };
 
   const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const validTypes = ['application/pdf'];
     if (!validTypes.includes(file.type)) {
       toast({
         title: "Invalid file type",
@@ -150,33 +150,35 @@ export const ProfileForm = () => {
       });
       return;
     }
-
+  
     setIsLoading(true);
     try {
       const formData = new FormData();
-
-      // Append all profile fields to FormData
+  
+      // Append all profile fields except avatar preview URL
       Object.keys(profileData).forEach(key => {
-        if (key !== '_id' && key !== 'avatarUrl' && key !== 'resumeUrl') {
+        if (key !== '_id' && key !== 'avatar' && key !== 'resumeUrl') {
           formData.append(key, profileData[key as keyof ProfileData]);
         }
       });
-
-      // Append files if they exist
+  
+      // Append avatar file if it exists
       if (avatarFile) {
         formData.append('avatar', avatarFile);
       }
+  
+      // Append resume file if it exists
       if (resumeFile) {
         formData.append('resume', resumeFile);
       }
-
+  
       if (profileData._id) {
         const updatedProfile = await updateProfile(profileData._id, formData);
         
         setProfileData(prev => ({ 
           ...prev, 
           ...updatedProfile,
-          avatarUrl: updatedProfile.avatarUrl || prev.avatarUrl,
+          avatar: updatedProfile.avatar || prev.avatar, // Ensure updated avatar URL is used
           resumeUrl: updatedProfile.resumeUrl || prev.resumeUrl,
           resumeName: updatedProfile.resumeName || prev.resumeName
         }));
@@ -185,7 +187,7 @@ export const ProfileForm = () => {
         setAvatarFile(null);
         setResumeFile(null);
       }
-      
+  
       toast({
         title: "Profile saved",
         description: "Your profile has been updated successfully.",
@@ -193,7 +195,7 @@ export const ProfileForm = () => {
     } catch (error) {
       toast({
         title: "Error saving profile",
-        description: error.response.data.message,
+        description: error.response?.data?.message || "Something went wrong",
         variant: "destructive",
       });
       console.error('Error saving profile:', error);
@@ -201,6 +203,7 @@ export const ProfileForm = () => {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <Card>
@@ -210,7 +213,7 @@ export const ProfileForm = () => {
       <CardContent>
         <div className="flex flex-col items-center mb-6">
           <Avatar className="h-24 w-24 mb-4">
-            <AvatarImage src={profileData.avatarUrl} />
+            <AvatarImage src={profileData.avatar} />
             <AvatarFallback>
               {profileData.name ? profileData.name.charAt(0) : 'P'}
             </AvatarFallback>
