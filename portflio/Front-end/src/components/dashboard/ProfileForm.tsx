@@ -346,6 +346,7 @@ export const ProfileForm = () => {
             <div>
               <label className="text-sm">LinkedIn URL</label>
               <Input
+                type='url'
                 value={profileData.linkedin}
                 onChange={(e) => handleInputChange('linkedin', e.target.value)}
                 placeholder="https://linkedin.com/in/username"
@@ -356,6 +357,7 @@ export const ProfileForm = () => {
             <div>
               <label className="text-sm">GitHub URL</label>
               <Input
+              type='url'
                 value={profileData.github}
                 onChange={(e) => handleInputChange('github', e.target.value)}
                 placeholder="https://github.com/username"
@@ -366,6 +368,7 @@ export const ProfileForm = () => {
             <div>
               <label className="text-sm">Twitter URL</label>
               <Input
+              type='url'
                 value={profileData.twitter}
                 onChange={(e) => handleInputChange('twitter', e.target.value)}
                 placeholder="https://twitter.com/username"

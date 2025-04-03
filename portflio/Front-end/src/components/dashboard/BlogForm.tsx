@@ -147,7 +147,8 @@ export const BlogForm = () => {
        updatePost(editingId, updateData).then(async () => {
         setRefreshData(!refreshData); 
         toast.success('Blog post updated successfully');
-
+        setEditingId(null); // Reset editing ID after successful update
+        resetForm();
        }).catch((error) => {
         
         console.error('Error updating post:', error);

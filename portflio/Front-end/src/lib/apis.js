@@ -230,7 +230,7 @@ const updatePost = async (id, updatedPost)=>{
 
 const deletePost = async (id)=>{
     try {
-        const response = await axios.delete(`${BASE_URL}/blogposts/${id}`);
+        const response = await axios.delete(`${BASE_URL}/blogposts/${id}`,{headers});
         return response.data.data;
     } catch (error) {
         console.error('Error deleting post:', error);
