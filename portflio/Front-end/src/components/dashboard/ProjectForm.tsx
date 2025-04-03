@@ -44,7 +44,7 @@ export const ProjectForm = () => {
   
   }).catch((error) => {
     console.error('Error fetching projects:', error);
-    toast.error('Failed to load projects');
+    toast.error(error.response.data.message);
   }).finally(() => {
     setLoading(false);
   });
@@ -127,7 +127,7 @@ export const ProjectForm = () => {
           toast.success('Project updated successfully');
         }).catch((error) => {
           console.error('Error updating project:', error);
-          toast.error('Failed to update project');
+          toast.error(error.response.data.message);
         });
 
       } else {
@@ -151,7 +151,7 @@ export const ProjectForm = () => {
         toast.success('Project added successfully');
       }).catch((error) => {
         console.error('Error adding project:', error);
-        toast.error('Failed to add project');
+        toast.error(error.response.data.message);
       }).finally(() => {
         setSaving(false);
       });
@@ -161,7 +161,7 @@ export const ProjectForm = () => {
       
     } catch (error) {
       console.error('Error saving project:', error);
-      toast.error(editingId ? 'Failed to update project' : 'Failed to add project');
+      toast.error(error.response.data.message);
     } finally {
       setSaving(false);
     }
@@ -202,7 +202,7 @@ export const ProjectForm = () => {
       }
     } catch (error) {
       console.error('Error deleting project:', error);
-      toast.error('Failed to delete project');
+      toast.error(error.response.data.message);
     }
   };
 

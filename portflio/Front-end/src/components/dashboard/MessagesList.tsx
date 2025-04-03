@@ -31,7 +31,7 @@ export const MessagesList = () => {
       
     } catch (error) {
       console.error('Error fetching messages:', error);
-      toast.error('Failed to load contact messages');
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ export const MessagesList = () => {
       );
     } catch (error) {
       console.error('Error updating message:', error);
-      toast.error('Failed to update message status');
+      toast.error(error.response.data.message);
     }
   };
 
@@ -79,7 +79,7 @@ export const MessagesList = () => {
       setMessages(messages.filter(message => message._id !== id));
     } catch (error) {
       console.error('Error deleting message:', error);
-      toast.error('Failed to delete message');
+      toast.error(error.response.data.message);
     }
   };
 

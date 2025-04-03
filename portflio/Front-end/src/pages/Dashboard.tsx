@@ -24,7 +24,7 @@ const Dashboard = () => {
 
     // Fetch unread messages count
     fetchMessages().then((messages) => {
-      const unreadCount = messages.filter((message) => !message.read).length;
+      const unreadCount = messages?.filter((message) => !message.read).length;
       setUnread(unreadCount);
     })
     // If not authenticated and not loading, redirect to auth page

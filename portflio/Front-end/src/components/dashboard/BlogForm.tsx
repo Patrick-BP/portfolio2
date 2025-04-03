@@ -42,6 +42,7 @@ export const BlogForm = () => {
     published: false,
   });
   const [refreshData, setRefreshData] = useState(false);
+  
 
   useEffect(() => {
     fetchPosts().then((data) => {
@@ -148,8 +149,9 @@ export const BlogForm = () => {
         toast.success('Blog post updated successfully');
 
        }).catch((error) => {
+        
         console.error('Error updating post:', error);
-        toast.error('Failed to update blog post');
+        toast.error(error.response.data.message);
        });
       } else {
         // Create new post
@@ -174,8 +176,9 @@ export const BlogForm = () => {
           toast.success('Post added successfully');
           resetForm();
         }).catch((error) => {
+          
           console.error('Error adding post:', error);
-          toast.error('Failed to add a post');
+          toast.error(error.response.data.message);
         }).finally(() => {
           setSaving(false);
         });
@@ -184,8 +187,9 @@ export const BlogForm = () => {
         
         
       } catch (error) {
+        
         console.error('Error saving post:', error);
-        toast.error(editingId ? 'Failed to update post' : 'Failed to add post');
+        toast.error(error.response.data.message);
       } finally {
         setSaving(false);
       }
@@ -224,8 +228,9 @@ export const BlogForm = () => {
       setRefreshData(!refreshData); // Toggle refresh state
       
     } catch (error) {
+      
       console.error('Error deleting blog post:', error);
-      toast.error('Failed to delete blog post');
+      toast.error(error.response.data.message);
     }
   };
 

@@ -79,7 +79,7 @@ export const TimelineForm = () => {
     } catch (error) {
       toast({
         title: "Error saving timeline",
-        description: "There was a problem saving your timeline. Please try again.",
+        description: error.response.data.message,
         variant: "destructive",
       });
       console.error('Error saving timeline:', error);

@@ -180,7 +180,7 @@ export const ProfileForm = () => {
           resumeUrl: updatedProfile.resumeUrl || prev.resumeUrl,
           resumeName: updatedProfile.resumeName || prev.resumeName
         }));
-        console.log(formData)
+       
         // Clear file states after successful upload
         setAvatarFile(null);
         setResumeFile(null);
@@ -193,7 +193,7 @@ export const ProfileForm = () => {
     } catch (error) {
       toast({
         title: "Error saving profile",
-        description: "There was a problem saving your profile. Please try again.",
+        description: error.response.data.message,
         variant: "destructive",
       });
       console.error('Error saving profile:', error);
@@ -201,7 +201,7 @@ export const ProfileForm = () => {
       setIsLoading(false);
     }
   };
-console.log(profileData)
+
   return (
     <Card>
       <CardHeader>

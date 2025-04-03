@@ -14,6 +14,7 @@ export const SkillsForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [initialSkills, setInitialSkills] = useState<Skill[]>([]);
   const { toast } = useToast();
+ 
   
   // Available icons for selection
   const availableIcons = ['PenTool', 'Server', 'Layers', 'Cpu', 'Database', 'Globe', 'Code', 'Briefcase'];
@@ -25,9 +26,10 @@ export const SkillsForm = () => {
         setSkills(data);
         setInitialSkills(data);
       } catch (error) {
+        
         toast({
           title: "Error loading skills",
-          description: "There was a problem loading your skills.",
+          description: error.response.data.message,
           variant: "destructive"
         });
       }
@@ -110,11 +112,21 @@ export const SkillsForm = () => {
       }
       
       for (const id of removedSkills) {
-        await deleteSkill(id);
-        toast({
-          title: "Skill deleted",
-          description: "The skill has been deleted successfully."
+        await deleteSkill(id).then((data) => {
+          
+          toast({
+            title: "Skill deleted",
+            description: data.message
+          });
+        }).catch((error) => {
+          
+          toast({
+            title: "Error deleting skill",
+            description: error.response.data.message,
+            variant: "destructive"
+          });
         });
+     
       }
       
       // Refresh the skills list after saving
@@ -123,9 +135,10 @@ export const SkillsForm = () => {
       setInitialSkills(data);
       
     } catch (error) {
+  
       toast({
         title: "Error saving skills",
-        description: "There was a problem saving your skills. Please try again.",
+        description: error.response.data.message,
         variant: "destructive"
       });
       console.error('Error saving skills:', error);
@@ -133,7 +146,7 @@ export const SkillsForm = () => {
       setIsLoading(false);
     }
   };
-  
+ 
   return (
     <Card>
       <CardHeader>
