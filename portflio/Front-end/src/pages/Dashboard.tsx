@@ -55,7 +55,7 @@ const Dashboard = () => {
       </div>
 
       <Tabs defaultValue="projects">
-        <TabsList className="mb-6 flex flex-wrap bg-gray-800  rounded-lg">
+        <TabsList className="mb-6 flex flex-wrap bg-gray-800  rounded-lg w-fit  ">
           <TabsTrigger value="projects" className="text-white px-4 py-2 rounded-lg hover:bg-gray-700 ">
             <Code className="h-4 w-4" /> Projects
           </TabsTrigger>
