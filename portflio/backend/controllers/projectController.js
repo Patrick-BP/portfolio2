@@ -23,9 +23,9 @@ exports.getAllProjects = async (req, res) => {
                 techStack: project.techStack
             };
         });
-        res.status(200).json(new Response(false, "", mapedProjects));;
+        res.status(200).json(new Response(false, "", mapedProjects));
       } catch (error) {
-        res.status(500).json(new Response(true, "Failed to fetch timeline entries", null));
+        res.status(500).json(new Response(true, "Failed to fetch projects entries", null));
       }
 };
 
