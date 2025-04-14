@@ -4,7 +4,7 @@ const vehicleSchema = new mongoose.Schema({
     model: String,
     make: String,
     year: Number,
-    plate_number: String
-  }, { timestamps: true });
+    license: String
+  }, { timestamps: true , versionKey: false });
   
   module.exports = mongoose.model('Vehicle', vehicleSchema);

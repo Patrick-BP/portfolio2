@@ -8,12 +8,12 @@ exports.addVehicle = async (req, res) => {
 
 exports.getVehicles = async (req, res) => {
   const vehicles = await Vehicle.find({ user: req.user.id });
-  res.json(vehicles);
+  res.json(vehicles[0]);
 };
 
 exports.updateVehicle = async (req, res) => {
   const vehicle = await Vehicle.findOneAndUpdate(
-    { _id: req.params.id, user: req.user.id },
+    { user: req.user.id },
     req.body,
     { new: true }
   );

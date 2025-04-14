@@ -6,7 +6,7 @@ const auth = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadMiddleware');
 
 router.get('/me', auth, controller.getUser);
-router.put('/me', auth, upload.single('profile_picture'), controller.updateUser);
+router.patch('/me', auth, upload.single('profile_picture'), controller.updateUser);
 
 module.exports = router;
 

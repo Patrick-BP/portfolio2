@@ -1,7 +1,7 @@
 
 const mongoose = require('mongoose');
 const expenseSchema = new mongoose.Schema({
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true },
     category: String,
     date: Date,
     description: String,
@@ -13,6 +13,6 @@ const expenseSchema = new mongoose.Schema({
     miles: Number,
     fuel_efficiency: Number,
     business_miles: Number,
-  }, { timestamps: true });
+  }, { timestamps: true , versionKey: false });
   
   module.exports = mongoose.model('Expense', expenseSchema);

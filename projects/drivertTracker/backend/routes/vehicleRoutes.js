@@ -5,6 +5,6 @@ const auth = require('../middlewares/authMiddleware');
 
 router.post('/', auth, controller.addVehicle);
 router.get('/', auth, controller.getVehicles);
-router.put('/:id', auth, controller.updateVehicle);
+router.patch('/', auth, controller.updateVehicle);
 
 module.exports = router;

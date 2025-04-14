@@ -1,13 +1,25 @@
 const Expense = require('../models/Expense');
 
 exports.addExpense = async (req, res) => {
-  const expense = new Expense({ ...req.body, user: req.user.id });
-  if (req.file) {
-    expense.receipt_url = `/uploads/receipts/${req.file.filename}`;
-  }
-  await expense.save();
-  res.json(expense);
+  try{
+    // if (!req.file) {
+    //   return res.status(400).json({ msg: 'Please upload a receipt' });
+    // }
+    const expenseData = { ...req.body, user: req.user.id };
+    if (req.file) {
+      expenseData.receipt_url = `/uploads/receipts/${req.file.filename}`;
+    }
+    
+    const expense = await Expense.create(expenseData);
+    res.json(expense);
+
+  }catch (error) {
+    res.status(500).json({ msg: 'Server Error', error: error.message });
+  }  
 };
+
+
+
 
 exports.getExpenses = async (req, res) => {
   const expenses = await Expense.find({ user: req.user.id });

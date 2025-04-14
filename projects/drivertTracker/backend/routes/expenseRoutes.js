@@ -6,7 +6,7 @@ const upload = require('../middlewares/uploadMiddleware');
 
 router.post('/', auth, upload.single('receipt'), controller.addExpense);
 router.get('/', auth, controller.getExpenses);
-router.put('/:id', auth, upload.single('receipt'), controller.updateExpense);
+router.patch('/:id', auth, upload.single('receipt'), controller.updateExpense);
 router.delete('/:id', auth, controller.deleteExpense);
 
 module.exports = router;
