@@ -1,15 +1,40 @@
-import { Stack } from "expo-router";
-import './globals.css'
-import { ThemeProvider } from "@/app/contexts/ThemeContext";
+// app/_layout.tsx
+import { Slot, SplashScreen } from 'expo-router';
+import { ThemeProvider } from '@/app/contexts/ThemeContext';
+import AuthProvider from '@/app/contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import LoadingScreen from '@/app/components/LoadingScreen';
 
+SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayout() {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // Simulate loading assets or auth state
+    const timer = setTimeout(() => {
+      setIsReady(true);
+      SplashScreen.hideAsync();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isReady) {
+    return <LoadingScreen />;
+  }
+
   return (
     <ThemeProvider>
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="movie/[id]" options={{ headerShown: false }} />
-    </Stack>
+      <AuthProvider>
+        <InitialLayout />
+      </AuthProvider>
     </ThemeProvider>
-  )
+  );
 }
+
+function InitialLayout() {
+  return <Slot />;
+}
+
+export default RootLayout;

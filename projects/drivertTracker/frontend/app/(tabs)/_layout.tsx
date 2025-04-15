@@ -4,8 +4,14 @@ import { Tabs } from 'expo-router';
 import {images } from '@/constants/images';
 import { icons } from '@/constants/icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from "@/app/contexts/AuthContext";
 
 const TabIcon = ({focused, icon, title}:any) => {
+  const { user } = useAuth();
+
+  if (!user) {
+    return null; // Or redirect to login
+  }
   const { isDarkMode } = useTheme();
   if(focused) {
   return(

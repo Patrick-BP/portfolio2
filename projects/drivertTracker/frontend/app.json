@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "DriverTracker",
-    "slug": "DriverTracker",
+    "name": "MileWise",
+    "slug": "MileWise",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",

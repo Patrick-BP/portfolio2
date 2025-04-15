@@ -6,10 +6,27 @@ import ExpenseCard from "@/app/ui/ExpenseCard";
 import EditExpenseModal from "@/app/ui/EditExpenseModal";
 import { useTheme } from "../contexts/ThemeContext";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 
 export default function Index() {
-  const router = useRouter();
+
+  const { user, logout, loading } = useAuth();
+    const router = useRouter();
+  // Redundant check (already handled in _layout.tsx)
+  // But added as a safety measure
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/welcome");
+    }
+  }, [user, loading]);
+
+  // If not authenticated, don't render the dashboard
+  if (!user) {
+    return null;
+  }
+  
   const { isDarkMode } = useTheme();
   type Expense = {
     id: string;
@@ -106,7 +123,7 @@ export default function Index() {
       <View style={{ flex: 1, paddingTop: 40  }}>
       <StatusBar barStyle={`${isDarkMode? 'light-content': 'dark-content' }`} backgroundColor={`${isDarkMode? '#1F2937':'#fff'}` } />
     </View>
-      <ScrollView className="mt-0">
+      <ScrollView className="mt-0 mx-4">
         <Text className={`text-[24px] font-bold ml-4  mb-4 ${isDarkMode ? "text-gray-300" : "text-gray-800"}`}>
           Dashboard
         </Text>
