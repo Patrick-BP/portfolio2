@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { useEffect } from 'react';
 import { router } from 'expo-router';
+import '../globals.css'
 
 export default function AuthLayout() {
   const { user, initialized } = useAuth();

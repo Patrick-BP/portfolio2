@@ -68,6 +68,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    router.push('/login'); // Redirect to login page
   };
 
   return (

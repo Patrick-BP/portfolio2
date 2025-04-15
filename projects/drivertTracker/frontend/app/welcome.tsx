@@ -82,9 +82,9 @@ const styles = {
         height: 350,
     },
     title: {
-        color: '#111827',
-        fontSize: 30,
-        fontWeight: "700",
+        color: '#111827' as const,
+        fontSize: 30 as const,
+        fontWeight: "700" as const,
     },
     text: {
         color: 'grey',

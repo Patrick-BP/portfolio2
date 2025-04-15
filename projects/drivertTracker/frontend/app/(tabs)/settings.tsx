@@ -23,8 +23,10 @@ import {
   AlertTriangle,
 } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const Settings = () => {
+  const { logout } = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
 
   const [mileageRate, setMileageRate] = useState('0.655');
@@ -78,6 +80,13 @@ const Settings = () => {
 
   const cardClass = `rounded-lg shadow-sm p-4 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`;
   const textClass = `ml-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`;
+
+  const HandleLogOut = () => {
+    Alert.alert('Logout', 'Are you sure you want to log out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', onPress: () => logout() },
+    ]);
+  };
 
   return (
     <ScrollView className={`p-4 ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'}`}>
@@ -277,7 +286,7 @@ const Settings = () => {
       </View>
 
       {/* Logout */}
-      <TouchableOpacity className="flex-row items-center justify-center py-3 border border-red-600 rounded-md mb-10">
+      <TouchableOpacity onPress={HandleLogOut} className="flex-row items-center justify-center py-3 border border-red-600 rounded-md mb-10">
         <LogOut size={18} stroke="#dc2626" />
         <Text className="text-red-600 ml-2"> Logout</Text>
       </TouchableOpacity>

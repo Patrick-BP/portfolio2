@@ -5,6 +5,7 @@ import {images } from '@/constants/images';
 import { icons } from '@/constants/icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from "@/app/contexts/AuthContext";
+import '../globals.css'
 
 const TabIcon = ({focused, icon, title}:any) => {
   const { user } = useAuth();
