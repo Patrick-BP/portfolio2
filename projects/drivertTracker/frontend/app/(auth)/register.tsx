@@ -65,7 +65,7 @@ if (fullname.length > 5) {
 
     try {
       setError('');
-      await register(email, password);
+      await register(fullname, email, password);
       // Navigation is handled in the AuthContext after successful login
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');
@@ -100,7 +100,7 @@ if (fullname.length > 5) {
             <User size={30} color={'#05375a'}/>
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder="Enter your full name"
               value={fullname}
               onChangeText={setFullname}
               keyboardType="email-address"

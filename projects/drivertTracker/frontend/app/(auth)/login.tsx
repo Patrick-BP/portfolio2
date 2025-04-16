@@ -1,14 +1,12 @@
 // app/(auth)/login.tsx
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
 import { useAuth } from '@/app/contexts/AuthContext';
 import * as Animatable from 'react-native-animatable';
-import { Mail, Lock, Eye, CircleCheck , EyeOff} from 'lucide-react-native';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { Mail, Lock, Eye, CircleCheck, EyeOff } from 'lucide-react-native';
 
 export default function LoginScreen() {
-  
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const { login, loading } = useAuth();
   const [email, setEmail] = useState('');
@@ -16,18 +14,10 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [emailValid, setEmailValid] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState('');
-
+  
   useEffect(() => { 
-    if (emailRegex.test(email)) {
-    setEmailValid(true);
-  }else{
-    setEmailValid(false);
-  }
+    setEmailValid(emailRegex.test(email));
   }, [email]);
-
-
 
   const handleLogin = async () => {
     // Basic validation
@@ -35,14 +25,8 @@ export default function LoginScreen() {
       setError('Email and password are required');
       return;
     }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
     
     // Email validation
-    
     if (!emailRegex.test(email)) {
       setError('Please enter a valid email address');
       return;
@@ -59,83 +43,57 @@ export default function LoginScreen() {
 
   return (
     <ScrollView style={styles.container}>
-        <View style={styles.header}>
-                
-                    <Animatable.View
-                        animation="bounceIn"
-                    />
-                    <Text style={styles.title}>Welcome Back</Text>
-                    <Text style={styles.subtitle}>Sign in to continue</Text>
-                    </View>
+      <View style={styles.header}>
+        <Animatable.View animation="bounceIn" />
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>Sign in to continue</Text>
+      </View>
                
-
-            <Animatable.View 
-                    style={styles.footer}
-                    animation="fadeInUpBig"
-                    >   
-        
+      <Animatable.View 
+        style={styles.footer}
+        animation="fadeInUpBig"
+      >   
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Email</Text>
-
-
-            <View style={{flexDirection:'row', alignItems:'center', width:'100%' }}>
-            <Mail size={30} color={'#05375a'}/>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <CircleCheck size={25} color={emailValid ? 'green' : 'gray'}/>
+            <View style={styles.inputRow}>
+              <Mail size={30} color={'#05375a'}/>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <CircleCheck size={25} color={emailValid ? 'green' : 'gray'}/>
             </View>
           </View>
 
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Password</Text>
-
-            <View style={{flexDirection:'row', alignItems:'center'}}>
+            <View style={styles.inputRow}>
               <Lock size={30} color={'#05375a'}/>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry = {!showPassword}
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            {showPassword ? <Eye size={25} color={'green'} />: <EyeOff size={25} color={'gray'}/>}
-            </TouchableOpacity>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                {showPassword ? <Eye size={25} color={'green'} /> : <EyeOff size={25} color={'gray'}/>}
+              </TouchableOpacity>
             </View>
-            
-
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Confirm Password</Text>
-
-            <View style={{flexDirection:'row', alignItems:'center'}}>
-              <Lock size={30} color={'#05375a'}/>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry = {!showConfirmPassword}
-            />
-            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-            {showConfirmPassword ? <Eye size={25} color={'green'} />: <EyeOff size={25} color={'gray'}/>}
-            </TouchableOpacity>
-            </View>
-            
-
-          </View>
-
-          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={handleLogin} 
+            disabled={loading}
+          >
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
@@ -150,8 +108,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        </Animatable.View> 
-     
+      </Animatable.View> 
     </ScrollView>
   );
 }
@@ -163,25 +120,25 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   header: {
-        flex: 2,
-        justifyContent: 'center' as const,
-        alignItems: 'center' as const,
-        paddingTop: 50,
-        paddingBottom: 100,
-        
+    flex: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 50,
+    paddingBottom: 100,
   },
   footer: {
-      height: '100%', 
-      paddingBottom: 150,
-      paddingVertical: 50,
-      borderTopLeftRadius: 30,
-      borderTopRightRadius: 30,
-      paddingHorizontal: 30,
-      backgroundColor: 'white',
+    height: '100%', 
+    paddingBottom: 150,
+    paddingVertical: 50,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 30,
+    backgroundColor: 'white',
   },
-  content: {
-    padding: 24,
-    justifyContent: 'center',
+  inputRow: {
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    width: '100%'
   },
   title: {
     color: 'white',
@@ -198,7 +155,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   inputContainer: {
-    
     marginBottom: 30,
   },
   inputLabel: {
@@ -207,7 +163,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   input: {
-    width: 300,
+    flex: 1,
     padding: 12,
     marginLeft: 10,
     fontSize: 16,

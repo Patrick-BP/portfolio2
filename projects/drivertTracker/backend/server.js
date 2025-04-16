@@ -1,12 +1,17 @@
  
-
+const cors = require('cors');
 require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db');
 const path = require('path');
 const multer = require('multer');
 
+
 const app = express();
+app.use(cors({
+  origin: 'http://localhost:8081', // Replace with your frontend URL
+  credentials: true,
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
