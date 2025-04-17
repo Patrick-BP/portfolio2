@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 
 type Expense = {
-  id: string;
+  _id: string;
   date: string;
   category: string;
   description: string;

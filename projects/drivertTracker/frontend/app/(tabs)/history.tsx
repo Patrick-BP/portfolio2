@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,78 +6,34 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { FilterIcon, SearchIcon } from 'lucide-react-native';
+import { FilterIcon, SearchIcon, RefreshCw } from 'lucide-react-native';
 import ExpenseCard from '@/app/ui/ExpenseCard';
 import EditExpenseModal from '@/app/ui/EditExpenseModal';
 import { useTheme } from '@/app/contexts/ThemeContext';
+import useRequest from '@/app/services/useRequest';
 
 const History = () => {
   const { isDarkMode } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const isMountedRef = useRef(true);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   type Expense = {
-    id: string;
+    _id: string;
     date: Date;
     category: string;
     description: string;
     amount: number;
   };
 
-  const [expenses, setExpenses] = useState<Expense[]>([
-    {
-      id: '1',
-      date: new Date(2023, 4, 10), // May 10, 2023
-      category: 'Fuel',
-      description: 'Shell Gas Station',
-      amount: 45.67,
-    },
-    {
-      id: '2',
-      date: new Date(2023, 4, 8),
-      category: 'Maintenance',
-      description: 'Oil Change',
-      amount: 39.99,
-    },
-    {
-      id: '3',
-      date: new Date(2023, 4, 5),
-      category: 'Tolls',
-      description: 'Highway Toll',
-      amount: 12.5,
-    },
-    {
-      id: '4',
-      date: new Date(2023, 4, 1),
-      category: 'Insurance',
-      description: 'Monthly Premium',
-      amount: 150.0,
-    },
-    {
-      id: '5',
-      date: new Date(2023, 3, 28),
-      category: 'Fuel',
-      description: 'Chevron',
-      amount: 42.75,
-    },
-    {
-      id: '6',
-      date: new Date(2023, 3, 25),
-      category: 'Phone',
-      description: 'Phone Bill',
-      amount: 85.0,
-    },
-    {
-      id: '7',
-      date: new Date(2023, 3, 20),
-      category: 'Meals',
-      description: 'Lunch during shift',
-      amount: 12.99,
-    },
-  ]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -90,40 +46,148 @@ const History = () => {
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
 
+  // Fetch expenses from API
+  const fetchExpenses = async () => {
+    if (!isMountedRef.current) return;
+    
+    try {
+      setLoading(true);
+      const response = await useRequest({
+        action: 'get',
+        payload: {},
+        path: 'expenses',
+        
+      });
+
+      if (!isMountedRef.current) return;
+
+      if (response.error) {
+        Alert.alert('Error', response.error);
+      } else if (response.data) {
+        // Transform dates from strings to Date objects
+        const formattedExpenses = response.data.map((expense: any) => ({
+          ...expense,
+          date: new Date(expense.date),
+        }));
+        setExpenses(formattedExpenses);
+      }
+    } catch (error) {
+      if (isMountedRef.current) {
+        Alert.alert('Error', 'Failed to fetch expenses');
+        console.error('Error fetching expenses:', error);
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    }
+  };
+
+  // Handle pull-to-refresh
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchExpenses();
+  }, []);
+
+  // Initial data fetch on component mount
   useEffect(() => {
     isMountedRef.current = true;
+    fetchExpenses();
     return () => {
       isMountedRef.current = false;
     };
   }, []);
 
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchExpenses();
+  };
+
   const handleEdit = (id: string) => {
-    const expense = expenses.find((e) => e.id === id);
+    const expense = expenses.find((e) => e._id === id);
     if (expense) {
       setSelectedExpense(expense);
       setModalVisible(true);
     }
   };
 
-  const handleSave = (updatedExpense: Expense) => {
-    setExpenses((prev) =>
-      prev.map((e) => (e.id === updatedExpense.id ? updatedExpense : e))
-    );
-    setModalVisible(false);
+  // Update function
+  const handleSave = async (updatedExpense: Expense) => {
+    try {
+      setLoading(true);
+      
+      // Format the expense data according to API expectations
+      const payload = {
+        category: updatedExpense.category,
+        description: updatedExpense.description,
+        amount: updatedExpense.amount,
+        date: updatedExpense.date.toISOString(),
+      };
+      
+      const response = await useRequest({
+        action: 'patch',
+        payload,
+        path: 'expenses',
+        id: updatedExpense._id, // ID is passed to identify the expense
+      });
+
+      if (response.error) {
+        setLoading(false);
+        Alert.alert('Error', response.error);
+      } else {
+        // Update local state only after successful API update
+        setExpenses((prev) =>
+          prev.map((e) => (e._id === updatedExpense._id ? updatedExpense : e))
+        );
+        Alert.alert('Success', 'Expense updated successfully');
+        setModalVisible(false);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update expense');
+      console.error('Error updating expense:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = (id: string) => {
-    const expense = expenses.find((e) => e.id === id);
+    const expense = expenses.find((e) => e._id === id);
     if (expense) {
       setExpenseToDelete(expense);
       setConfirmVisible(true);
     }
   };
 
-  const confirmDelete = () => {
-    setExpenses((prev) => prev.filter((e) => e.id !== expenseToDelete?.id));
-    setConfirmVisible(false);
-    setExpenseToDelete(null);
+  // Delete function
+  const confirmDelete = async () => {
+    if (!expenseToDelete) return;
+    
+    try {
+      setLoading(true);
+      
+      // Using post action for delete operation with a flag
+      const response = await useRequest({
+        action: 'delete', // Changed from 'put' to 'post' based on API expectation
+        path: 'expenses',
+        id: expenseToDelete._id, 
+      });
+
+      if (response.error) {
+        Alert.alert('Error', response.error);
+      } else {
+        // Remove from local state after successful API delete
+        setExpenses((prev) => prev.filter((e) => e._id !== expenseToDelete._id));
+        Alert.alert('Success', 'Expense deleted successfully');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to delete expense');
+      console.error('Error deleting expense:', error);
+    } finally {
+      setLoading(false);
+      setConfirmVisible(false);
+      setExpenseToDelete(null);
+    }
   };
 
   const handleSearchChange = (value: string) => {
@@ -140,8 +204,8 @@ const History = () => {
 
   const filteredExpenses = expenses.filter((expense) => {
     const matchesSearch =
-      expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      expense.category.toLowerCase().includes(searchTerm.toLowerCase());
+      expense.description?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+      expense.category?.toLowerCase().includes(searchTerm?.toLowerCase());
 
     const matchesCategory = selectedCategory
       ? expense.category === selectedCategory
@@ -152,12 +216,37 @@ const History = () => {
 
     return matchesSearch && matchesCategory && matchesStart && matchesEnd;
   });
-
+console.log("expenses",expenses)
   return (
-    <ScrollView className={`flex-1 ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'} p-4`}>
-      <Text className={`text-[24px] font-bold mb-4 mt-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
-        Expense History
-      </Text>
+    <ScrollView 
+      className={`flex-1 ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'} p-4`}
+      contentContainerStyle={{ paddingBottom: 80 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={[isDarkMode ? '#60a5fa' : '#3b82f6']} // Android
+          tintColor={isDarkMode ? '#60a5fa' : '#3b82f6'} // iOS
+          progressBackgroundColor={isDarkMode ? '#1f2937' : '#f9fafb'} // Android
+        />
+      }
+    >
+      <View className="flex-row justify-between items-center mb-4 mt-4">
+        <Text className={`text-[24px] font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
+          Expense History
+        </Text>
+        <TouchableOpacity 
+          onPress={handleRefresh}
+          disabled={loading || refreshing}
+          className="p-2"
+        >
+          <RefreshCw 
+            size={20} 
+            stroke={isDarkMode ? '#6b7280' : '#4b5563'} 
+            className={refreshing ? 'animate-spin' : ''}
+          />
+        </TouchableOpacity>
+      </View>
 
       {/* Search and Filter */}
       <View className="mb-4 space-y-2">
@@ -289,51 +378,65 @@ const History = () => {
         )}
       </View>
 
-      {/* Expense List */}
-      <View>
-        {filteredExpenses.length > 0 ? (
-          filteredExpenses.map((expense) => (
-            <ExpenseCard
-              key={expense.id}
-              {...expense}
-              date={expense.date.toDateString()}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))
-        ) : (
-          <Text className={`text-center p-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-            No expenses found. Try adjusting your filters.
+      {/* Loading State */}
+      {loading && !refreshing && (
+        <View className="py-8 items-center">
+          <ActivityIndicator size="large" color={isDarkMode ? '#60a5fa' : '#3b82f6'} />
+          <Text className={`mt-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            Loading expenses...
           </Text>
-        )}
-      </View>
+        </View>
+      )}
+
+      {/* Expense List */}
+      {(!loading || refreshing) && (
+        <View>
+          {filteredExpenses.length > 0 ? (
+            filteredExpenses.map((expense) => (
+              <ExpenseCard
+                key={expense._id}
+                {...expense}
+                date={expense.date.toDateString()}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))
+          ) : (
+            <Text className={`text-center p-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              No expenses found. Try adjusting your filters.
+            </Text>
+          )}
+        </View>
+      )}
 
       {/* Edit Modal */}
       {isModalVisible && selectedExpense && (
         <EditExpenseModal
           visible={isModalVisible}
           onClose={() => setModalVisible(false)}
-          expense={selectedExpense}
-          onSave={handleSave}
+          expense={{ ...selectedExpense, date: selectedExpense.date.toISOString() }}
+          onSave={(updatedExpense) =>
+            handleSave({ ...updatedExpense, date: new Date(updatedExpense.date) })
+          }
         />
       )}
 
       {/* Confirm Delete Modal */}
       {isConfirmVisible && expenseToDelete && (
         <View className="absolute inset-0 justify-center items-center bg-black/50 z-50">
-          <View className="bg-white p-6 rounded-xl w-11/12">
-            <Text className="text-lg font-semibold mb-3">
+          <View className={`p-6 rounded-xl w-11/12 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <Text className={`text-lg font-semibold mb-3 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
               Delete "{expenseToDelete.description}"?
             </Text>
-            <Text className="text-gray-600 mb-4">
+            <Text className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               Are you sure you want to delete this expense? This action cannot be undone.
             </Text>
             <View className="flex-row justify-between">
               <TouchableOpacity
-                className="px-4 py-2 bg-gray-200 rounded-md"
+                className={`px-4 py-2 rounded-md ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}
                 onPress={() => setConfirmVisible(false)}
               >
-                <Text className="text-gray-800 font-semibold">Cancel</Text>
+                <Text className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-800'}`}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 className="px-4 py-2 bg-red-600 rounded-md"

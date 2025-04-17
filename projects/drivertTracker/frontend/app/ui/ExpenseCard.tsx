@@ -4,7 +4,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { View, Text, TouchableOpacity } from 'react-native'
 
 interface ExpenseCardProps {
-  id: string
+  _id: string
   date: string
   category: string
   description: string
@@ -16,7 +16,7 @@ interface ExpenseCardProps {
   onDelete: (id: string) => void
 }
 const ExpenseCard = ({
-  id,
+  _id,
   date,
   category,
   description,
@@ -36,6 +36,8 @@ const ExpenseCard = ({
   const mpg =
     tripDistance && gallons ? (tripDistance / gallons).toFixed(1) : null
   const pricePerGallon = gallons ? (amount / gallons).toFixed(3) : null
+
+  console.log("id", _id)
   return (
     <View className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm p-4 mb-3`}
     >
@@ -53,8 +55,8 @@ const ExpenseCard = ({
             {description}
           </Text>
           {category === 'Fuel' && gallons && (
-            <View  className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} >
-              <Text>
+            <View  className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-900'}`} >
+              <Text className={`mt-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-900'}`} >
                 {gallons.toFixed(3)} gallons at ${pricePerGallon}/gal
               </Text>
               {mpg && <Text>{mpg} MPG</Text>}
@@ -67,7 +69,7 @@ const ExpenseCard = ({
       </View>
       <View className="flex-row justify-end mt-3 space-x-2">
         <TouchableOpacity
-          onPress={() => onEdit(id)}
+          onPress={() => onEdit(_id)}
           className={`p-1 mr-2 text-blue-500 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-blue-50'}`}
           aria-label="Edit expense"
         >
@@ -75,7 +77,7 @@ const ExpenseCard = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => onDelete(id)}
+          onPress={() => onDelete(_id)}
           className={`p-1 text-red-500 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50'}`}
           aria-label="Delete expense"
         >

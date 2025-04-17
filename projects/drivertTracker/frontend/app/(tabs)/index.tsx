@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, View, ScrollView, TouchableOpacity, StatusBar } from "react-native";
 import { WrenchIcon, CalendarIcon, CarIcon, Plus } from "lucide-react-native";
 import StatCard from "@/app/ui/statCard";
@@ -6,28 +6,15 @@ import ExpenseCard from "@/app/ui/ExpenseCard";
 import EditExpenseModal from "@/app/ui/EditExpenseModal";
 import { useTheme } from "../contexts/ThemeContext";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
 import { useAuth } from "@/app/contexts/AuthContext";
 
-
 export default function Index() {
-
+  // Move ALL hooks to the top before any conditional logic
   const { user, logout, loading } = useAuth();
-    const router = useRouter();
-  // Redundant check (already handled in _layout.tsx)
-  // But added as a safety measure
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/welcome");
-    }
-  }, [user, loading]);
-
-  // If not authenticated, don't render the dashboard
-  if (!user) {
-    return null;
-  }
-  
+  const router = useRouter();
   const { isDarkMode } = useTheme();
+
+  // Define types first
   type Expense = {
     id: string;
     date: string;
@@ -36,6 +23,7 @@ export default function Index() {
     amount: number;
   };
 
+  // Define all useState hooks
   const [recentExpenses, setRecentExpenses] = useState([
     {
       id: "1",
@@ -76,9 +64,17 @@ export default function Index() {
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
-
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
+
+  // Then useEffect hooks
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/welcome");
+    }
+  }, [user, loading, router]);
+
+  
 
   const mileageStats = {
     thisMonth: 610,
@@ -120,11 +116,11 @@ export default function Index() {
 
   return (
     <View className={`flex-1 ${isDarkMode ? "bg-[#111827]" : "bg-blue-50"}`}>
-      <View style={{ flex: 1, paddingTop: 40  }}>
-      <StatusBar barStyle={`${isDarkMode? 'light-content': 'dark-content' }`} backgroundColor={`${isDarkMode? '#1F2937':'#fff'}` } />
-    </View>
+      <View style={{ flex: 1, paddingTop: 40 }}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor={isDarkMode ? '#1F2937' : '#fff'} />
+      </View>
       <ScrollView className="mt-0 mx-4">
-        <Text className={`text-[24px] font-bold ml-4  mb-4 ${isDarkMode ? "text-gray-300" : "text-gray-800"}`}>
+        <Text className={`text-[24px] font-bold ml-4 mb-4 ${isDarkMode ? "text-gray-300" : "text-gray-800"}`}>
           Dashboard
         </Text>
 
@@ -133,19 +129,19 @@ export default function Index() {
           <StatCard
             title="This Month"
             value="$345.82"
-            icon={<CalendarIcon size={20} stroke={`${isDarkMode ? '#fff' :'#2563eb'}`} />}
+            icon={<CalendarIcon size={20} stroke={isDarkMode ? '#fff' : '#2563eb'} />}
             trend={{ value: 12, isPositive: false }}
           />
           <StatCard
             title="Miles Driven"
             value={`${mileageStats.thisMonth}`}
-            icon={<CarIcon size={20} stroke={`${isDarkMode ? '#fff' :'#2563eb'}`} />}
+            icon={<CarIcon size={20} stroke={isDarkMode ? '#fff' : '#2563eb'} />}
             subtitle="This Month"
           />
           <StatCard
             title="Business Miles"
             value={mileageStats.businessMiles.toLocaleString()}
-            icon={<CarIcon size={20} stroke={`${isDarkMode ? '#fff' :'#2563eb'}`} />}
+            icon={<CarIcon size={20} stroke={isDarkMode ? '#fff' : '#2563eb'} />}
             subtitle={`$${(
               mileageStats.businessMiles * mileageStats.mileageRate
             ).toFixed(2)} Deduction`}
@@ -153,7 +149,7 @@ export default function Index() {
           <StatCard
             title="Per Mile"
             value="$0.32"
-            icon={<WrenchIcon size={20} stroke={`${isDarkMode ? '#fff' :'#2563eb'}`} />}
+            icon={<WrenchIcon size={20} stroke={isDarkMode ? '#fff' : '#2563eb'} />}
             subtitle="Avg. Operating Cost"
           />
         </View>

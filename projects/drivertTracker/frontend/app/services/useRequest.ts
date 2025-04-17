@@ -3,10 +3,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // const baseUrl = "http://localhost:3000/api/";
 
 export type RequestType = {
-    action: 'post' | 'get' | 'put'; 
-    payload: object;
+    action: 'post' | 'get' | 'patch' |'delete'; 
+    payload?: object;
     path: 'auth' | 'users' | 'expenses' | 'vehicle';
-    route: 'register' | 'login' | 'category-breakdown' | 'fuel-efficiency' | 'import-csv' | 'export-csv' | 'me';
+    route?: 'register' | 'login' | 'category-breakdown' | 'fuel-efficiency' | 'import-csv' | 'export-csv' | 'me';
     id?: string;
 }
 
@@ -28,7 +28,7 @@ const useRequest = (config: RequestType): Promise<RequestResult> => {
             
             const { action, payload, path, route, id } = config;
             const url = `${baseUrl}${path}${route ? `/${route}` : ''}${id ? `/${id}` : ''}`;
-           
+           console.log("url :" ,id)
             const result = await fetch(url, {
                 method: action.toUpperCase(),
                 headers: headers,

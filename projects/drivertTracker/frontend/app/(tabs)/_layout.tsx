@@ -10,9 +10,7 @@ import '../globals.css'
 const TabIcon = ({focused, icon, title}:any) => {
   const { user } = useAuth();
 
-  if (!user) {
-    return null; // Or redirect to login
-  }
+  
   const { isDarkMode } = useTheme();
   if(focused) {
   return(
