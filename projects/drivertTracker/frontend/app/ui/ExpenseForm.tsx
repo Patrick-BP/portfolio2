@@ -18,8 +18,8 @@ interface ExpenseFormProps {
     date: string;
     description: string;
     amount: number;
-    odometer?: number;
-    previousOdometer?: number;
+    current_mileage?: number;
+    previous_mileage?: number;
     gallons?: number;
     receipt?: any;
   }) => void;
@@ -28,8 +28,8 @@ interface ExpenseFormProps {
     date: string;
     description: string;
     amount: number;
-    odometer?: number;
-    previousOdometer?: number;
+    current_mileage?: number;
+    previous_mileage?: number;
     gallons?: number;
   };
 }
@@ -53,8 +53,8 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
   const [date, setDate] = useState(initialValues?.date || new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState(initialValues?.description || '');
   const [amount, setAmount] = useState(initialValues?.amount?.toString() || '');
-  const [odometer, setOdometer] = useState(initialValues?.odometer?.toString() || '');
-  const [previousOdometer, setPreviousOdometer] = useState(initialValues?.previousOdometer?.toString() || '');
+  const [odometer, setOdometer] = useState(initialValues?.current_mileage?.toString() || '');
+  const [previousOdometer, setPreviousOdometer] = useState(initialValues?. previous_mileage?.toString() || '');
   const [gallons, setGallons] = useState(initialValues?.gallons?.toString() || '');
   const [receipt, setReceipt] = useState<any>(null);
 
@@ -92,10 +92,12 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
       description,
       amount: parseFloat(amount),
       receipt: receipt || undefined,
-      odometer: odometer ? parseFloat(odometer) : undefined,
-      previousOdometer: previousOdometer ? parseFloat(previousOdometer) : undefined,
+      current_mileage: odometer ? parseFloat(odometer) : undefined,
+      previous_mileage: previousOdometer ? parseFloat(previousOdometer) : undefined,
       gallons: gallons ? parseFloat(gallons) : undefined,
     });
+
+
 
     if (!initialValues) {
       setCategory('');
@@ -182,9 +184,9 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
             />
           </View>
           <View className={`space-y-1 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            {tripDistance > 0 && <Text>Trip Distance: {tripDistance} mi</Text>}
-            {mpg && <Text>Fuel Efficiency: {mpg} MPG</Text>}
-            {pricePerGallon && <Text>Price per Gallon: ${pricePerGallon}</Text>}
+            {tripDistance > 0 && <Text className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Trip Distance: {tripDistance} mi</Text>}
+            {mpg && <Text className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Fuel Efficiency: {mpg} MPG</Text>}
+            {pricePerGallon && <Text className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Price per Gallon: ${pricePerGallon}</Text>}
           </View>
         </View>
       )}

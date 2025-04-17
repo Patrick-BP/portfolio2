@@ -6,6 +6,7 @@ exports.addExpense = async (req, res) => {
     //   return res.status(400).json({ msg: 'Please upload a receipt' });
     // }
     const expenseData = { ...req.body, user: req.user.id };
+    console.log(req.body)
     if (req.file) {
       expenseData.receipt_url = `/uploads/receipts/${req.file.filename}`;
     }

@@ -28,7 +28,7 @@ const useRequest = (config: RequestType): Promise<RequestResult> => {
             
             const { action, payload, path, route, id } = config;
             const url = `${baseUrl}${path}${route ? `/${route}` : ''}${id ? `/${id}` : ''}`;
-           console.log("url :" ,id)
+           
             const result = await fetch(url, {
                 method: action.toUpperCase(),
                 headers: headers,

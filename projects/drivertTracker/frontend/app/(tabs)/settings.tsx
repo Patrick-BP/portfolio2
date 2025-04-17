@@ -9,7 +9,9 @@ import {
   Modal,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import {
   User,
@@ -24,29 +26,94 @@ import {
 } from 'lucide-react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
+import useRequest from '../services/useRequest';
 
 const Settings = () => {
-  const { logout } = useAuth();
+  const { logout, user} = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
 
   const [mileageRate, setMileageRate] = useState('0.655');
   const [useActualExpenses, setUseActualExpenses] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [vehicle, setVehicle] = useState({
-    make: 'Toyota',
-    model: 'Camry',
-    year: '2019',
-    license: 'ABC-1234',
+    make: '',
+    model: '',
+    year: '',
+    license: '',
+    id: '',
   });
 
   const [profile, setProfile] = useState({
-    name: 'John Driver',
-    email: 'john.driver@example.com',
+    name: '',
+    email: '',
   });
 
   const [modalVehicleVisible, setModalVehicleVisible] = useState(false);
   const [modalProfileVisible, setModalProfileVisible] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  // Fetch user and vehicle data
+  useEffect(() => {
+    fetchUserData();
+    fetchVehicleData();
+  }, []);
+
+  const fetchUserData = async () => {
+    setLoading(true);
+    try {
+      const result = await useRequest({
+        action: 'get',
+        path: 'users',
+        route: 'me',
+      });
+
+      if (result.data && !result.error) {
+        setProfile({
+          name: result.data.name || '',
+          email: result.data.email || '',
+        });
+        
+        if (result.data.profileImageUrl) {
+          setProfileImage(result.data.profileImageUrl);
+        }
+      } else {
+        Alert.alert('Error', result.error || 'Failed to fetch profile data');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      Alert.alert('Error', 'Failed to load profile data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchVehicleData = async () => {
+    setLoading(true);
+    try {
+      const result = await useRequest({
+        action: 'get',
+        path: 'vehicle',
+      });
+
+      if (result.data && !result.error) {
+        setVehicle({
+          make: result.data.make || '',
+          model: result.data.model || '',
+          year: result.data.year || '',
+          license: result.data.license || '',
+          id: result.data.id || '',
+        });
+      } else if (result.error) {
+        console.log('No vehicle data found or error:', result.error);
+      }
+    } catch (error) {
+      console.error('Error fetching vehicle data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Request media permissions
   useEffect(() => {
@@ -68,18 +135,155 @@ const Settings = () => {
       });
 
       if (!result.canceled) {
-        setProfileImage(result.assets[0].uri);
+        const localUri = result.assets[0].uri;
+        setProfileImage(localUri);
+        uploadProfileImage(localUri);
       }
     } catch (error) {
       Alert.alert('Error', 'Something went wrong while picking the image.');
     }
   };
 
-  const handleSaveVehicle = () => setModalVehicleVisible(false);
-  const handleSaveProfile = () => setModalProfileVisible(false);
+  const uploadProfileImage = async (imageUri: string) => {
+    setUploadingImage(true);
+    
+    try {
+      // We'll use direct fetch API with FormData for image upload
+      const formData = new FormData();
+      
+      // Get the file extension
+      const uriParts = imageUri.split('.');
+      const fileType = uriParts[uriParts.length - 1];
+      
+      // Add the image to form data
+      // @ts-ignore - TypeScript doesn't handle FormData well with React Native
+      formData.append('profileImage', {
+        uri: imageUri,
+        name: `photo.${fileType}`,
+        type: `image/${fileType}`,
+      });
+      
+      // Get the token for authorization
+      const token = await AsyncStorage.getItem('token');
+      const baseUrl = "http://192.168.0.233:3000/api/";
+      
+      // Make the request
+      const response = await fetch(`${baseUrl}users/profile-image`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          // Note: Don't set Content-Type when sending FormData
+        },
+        body: formData,
+      });
+      
+      // Check if response is OK
+      if (response.ok) {
+        // Try to parse as JSON
+        try {
+          const responseData = await response.json();
+          if (responseData.profileImageUrl) {
+            setProfileImage(responseData.profileImageUrl);
+          }
+          Alert.alert('Success', 'Profile image updated successfully');
+        } catch (parseError) {
+          // If it's not JSON but the response was OK, still consider it a success
+          console.log('Response not in JSON format but upload succeeded');
+          Alert.alert('Success', 'Profile image updated successfully');
+          // Refresh user data to get the updated image URL
+          await fetchUserData();
+        }
+      } else {
+        console.error('Error response:', response.status, response.statusText);
+        
+        // Try to get error details
+        let errorMsg = 'Failed to upload profile image';
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.msg || errorMsg;
+        } catch (parseError) {
+          // If we can't parse the error as JSON, use a generic message
+          console.log('Error response not in JSON format');
+        }
+        
+        Alert.alert('Error', errorMsg);
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', 'Failed to upload profile image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
-  const cardClass = `rounded-lg shadow-sm p-4 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`;
-  const textClass = `ml-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`;
+  const handleSaveVehicle = async () => {
+    setLoading(true);
+    
+    try {
+      const action = vehicle.id ? 'patch' : 'post';
+      const id = vehicle.id || undefined;
+      
+      const payload = {
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        license: vehicle.license,
+      };
+      
+      const result = await useRequest({
+        action,
+        path: 'vehicle',
+        id,
+        payload,
+      });
+      
+      if (!result.error) {
+        // If it was a new vehicle, update the id
+        if (!vehicle.id && result.data.id) {
+          setVehicle(prev => ({ ...prev, id: result.data.id }));
+        }
+        
+        Alert.alert('Success', 'Vehicle information saved successfully');
+        setModalVehicleVisible(false);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to save vehicle information');
+      }
+    } catch (error) {
+      console.error('Error saving vehicle:', error);
+      Alert.alert('Error', 'Failed to save vehicle information');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setLoading(true);
+    
+    try {
+      const result = await useRequest({
+        action: 'patch',
+        path: 'users',
+        route: 'me',
+        payload: {
+          name: profile.name,
+          email: profile.email,
+        },
+      });
+      
+      if (!result.error) {
+        Alert.alert('Success', 'Profile updated successfully');
+        setModalProfileVisible(false);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const HandleLogOut = () => {
     Alert.alert('Logout', 'Are you sure you want to log out?', [
@@ -87,6 +291,18 @@ const Settings = () => {
       { text: 'Logout', onPress: () => logout() },
     ]);
   };
+
+  const cardClass = `rounded-lg shadow-sm p-4 mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`;
+  const textClass = `ml-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`;
+
+  if (loading && !profile.name) {
+    return (
+      <View className={`flex-1 justify-center items-center ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'}`}>
+        <ActivityIndicator size="large" color="#2563eb" />
+        <Text className={`mt-4 ${isDarkMode ? 'text-white' : 'text-black'}`}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView className={`p-4 ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'}`}>
@@ -97,9 +313,11 @@ const Settings = () => {
       {/* Profile Section */}
       <View className={cardClass}>
         <View className="flex-row items-center">
-          <TouchableOpacity onPress={handlePickImage}>
+          <TouchableOpacity onPress={handlePickImage} disabled={uploadingImage}>
             <View className="bg-blue-100 rounded-full p-0.5 overflow-hidden w-[69px] h-[69px] items-center justify-center">
-              {profileImage ? (
+              {uploadingImage ? (
+                <ActivityIndicator size="small" color="#2563eb" />
+              ) : profileImage ? (
                 <Image source={{ uri: profileImage }} className="w-full h-full rounded-full" />
               ) : (
                 <User size={69} stroke="#2563eb" />
@@ -132,13 +350,17 @@ const Settings = () => {
               placeholder="Name"
               value={profile.name}
               onChangeText={(text) => setProfile({ ...profile, name: text })}
-              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300 placeholder:text-gray-300' : 'text-gray-900 placeholder:text-gray-900'}`}
+              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}
+              placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
             />
             <TextInput
               placeholder="Email"
               value={profile.email}
               onChangeText={(text) => setProfile({ ...profile, email: text })}
-              className={`border rounded-md p-2 mb-4 border-gray-300 ${isDarkMode ? 'text-gray-300 placeholder:text-gray-300' : 'text-gray-900 placeholder:text-gray-900'}`}
+              className={`border rounded-md p-2 mb-4 border-gray-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}
+              placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
             <View className="flex-row justify-between">
               <TouchableOpacity
@@ -150,8 +372,13 @@ const Settings = () => {
               <TouchableOpacity
                 onPress={handleSaveProfile}
                 className="px-4 py-2 bg-blue-600 rounded-md"
+                disabled={loading}
               >
-                <Text className="text-white">Save</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text className="text-white">Save</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -171,8 +398,14 @@ const Settings = () => {
             <ChevronRight size={18} stroke="#9ca3af" />
           </TouchableOpacity>
         </View>
-        <Text className={`text-sm ${textClass}`}>{vehicle.year} {vehicle.make} {vehicle.model}</Text>
-        <Text className={`text-sm ${textClass}`}>License: {vehicle.license}</Text>
+        {vehicle.make ? (
+          <>
+            <Text className={`text-sm ${textClass}`}>{vehicle.year} {vehicle.make} {vehicle.model}</Text>
+            <Text className={`text-sm ${textClass}`}>License: {vehicle.license}</Text>
+          </>
+        ) : (
+          <Text className={`text-sm ${textClass}`}>No vehicle information added</Text>
+        )}
       </View>
 
       {/* Vehicle Edit Modal */}
@@ -187,25 +420,30 @@ const Settings = () => {
               value={vehicle.year}
               onChangeText={(text) => setVehicle({ ...vehicle, year: text })}
               keyboardType="numeric"
-              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300 placeholder:text-gray-300' : 'text-gray-900 placeholder:text-gray-900'}`}
+              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}
+              placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
+              maxLength={4}
             />
             <TextInput
               placeholder="Make"
               value={vehicle.make}
               onChangeText={(text) => setVehicle({ ...vehicle, make: text })}
-              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300 placeholder:text-gray-300' : 'text-gray-900 placeholder:text-gray-900'}`}
+              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}
+              placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
             />
             <TextInput
               placeholder="Model"
               value={vehicle.model}
               onChangeText={(text) => setVehicle({ ...vehicle, model: text })}
-              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300 placeholder:text-gray-300' : 'text-gray-900 placeholder:text-gray-900'}`}
+              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}
+              placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
             />
             <TextInput
               placeholder="License"
               value={vehicle.license}
               onChangeText={(text) => setVehicle({ ...vehicle, license: text })}
-              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300 placeholder:text-gray-300' : 'text-gray-900 placeholder:text-gray-900'}`}
+              className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}
+              placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
             />
             <View className="flex-row justify-between">
               <TouchableOpacity
@@ -217,8 +455,13 @@ const Settings = () => {
               <TouchableOpacity
                 onPress={handleSaveVehicle}
                 className="px-4 py-2 bg-blue-600 rounded-md"
+                disabled={loading}
               >
-                <Text className="text-white">Save</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text className="text-white">Save</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
