@@ -168,8 +168,8 @@ const Settings = () => {
         type: mimeType,
       };
       
-      // Print properties to verify
-      console.log("Asset URI:", fileToUpload);
+     
+   
       
       // FormData instance
       const formData = new FormData();
