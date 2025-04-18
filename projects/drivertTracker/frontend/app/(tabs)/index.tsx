@@ -169,7 +169,7 @@ export default function Index() {
           {recentExpenses.map((expense) => (
             <ExpenseCard
               key={expense.id}
-              id={expense.id}
+              _id={expense.id}
               date={expense.date}
               category={expense.category}
               description={expense.description}

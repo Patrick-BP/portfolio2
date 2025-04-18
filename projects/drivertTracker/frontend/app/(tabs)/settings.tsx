@@ -28,6 +28,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import useRequest from '../services/useRequest';
 
+
+
 const Settings = () => {
   const { logout, user} = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
@@ -74,6 +76,7 @@ const Settings = () => {
           name: result.data.name || '',
           email: result.data.email || '',
         });
+        setProfileImage(result.data.profile_picture)
         
         if (result.data.profileImageUrl) {
           setProfileImage(result.data.profileImageUrl);
@@ -131,45 +134,54 @@ const Settings = () => {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
-      });
+        quality: 1,
+        base64: false,
+      })
 
-      if (!result.canceled) {
-        const localUri = result.assets[0].uri;
-        setProfileImage(localUri);
-        uploadProfileImage(localUri);
+      
+      if (!result.canceled && result.assets.length > 0) {
+   
+
+      
+        setProfileImage(result.assets[0].uri);
+        await uploadProfileImage(result);
       }
     } catch (error) {
       Alert.alert('Error', 'Something went wrong while picking the image.');
     }
   };
 
-  const uploadProfileImage = async (imageUri: string) => {
+  const uploadProfileImage = async (result: any) => {
     setUploadingImage(true);
     
     try {
-      // We'll use direct fetch API with FormData for image upload
+      const asset = result.assets[0];
+
+      const localUri = asset.uri;
+      const filename = asset.fileName || `profile_${Date.now()}.jpg`;
+      const extension = filename.split('.').pop()?.toLowerCase();
+      const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
+      
+      const fileToUpload = {
+        uri: localUri.startsWith('file://') ? localUri : `file:///${localUri}`,
+        name: filename,
+        type: mimeType,
+      };
+      
+      // Print properties to verify
+      console.log("Asset URI:", fileToUpload);
+      
+      // FormData instance
       const formData = new FormData();
-      
-      // Get the file extension
-      const uriParts = imageUri.split('.');
-      const fileType = uriParts[uriParts.length - 1];
-      
-      // Add the image to form data
-      // @ts-ignore - TypeScript doesn't handle FormData well with React Native
-      formData.append('profileImage', {
-        uri: imageUri,
-        name: `photo.${fileType}`,
-        type: `image/${fileType}`,
-      });
-      
+      // @ts-ignore
+      formData.append('profile_picture', fileToUpload);
       // Get the token for authorization
       const token = await AsyncStorage.getItem('token');
       const baseUrl = "http://192.168.0.233:3000/api/";
       
       // Make the request
-      const response = await fetch(`${baseUrl}users/profile-image`, {
-        method: 'POST',
+      const response = await fetch(`${baseUrl}users/me`, {
+        method: 'PATCH',
         headers: {
           'Accept': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -177,7 +189,7 @@ const Settings = () => {
         },
         body: formData,
       });
-      
+
       // Check if response is OK
       if (response.ok) {
         // Try to parse as JSON
@@ -318,7 +330,7 @@ const Settings = () => {
               {uploadingImage ? (
                 <ActivityIndicator size="small" color="#2563eb" />
               ) : profileImage ? (
-                <Image source={{ uri: profileImage }} className="w-full h-full rounded-full" />
+                <Image source={{ uri: `http://192.168.0.233:3000${profileImage}` }} className="w-full h-full rounded-full" />
               ) : (
                 <User size={69} stroke="#2563eb" />
               )}
