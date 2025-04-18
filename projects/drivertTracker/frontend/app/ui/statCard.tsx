@@ -15,8 +15,6 @@ interface StatCardProps {
 }
 const StatCard = ({ title, value, icon, trend, subtitle }: any) => {
   const { isDarkMode } = useTheme()
-
-  console.log(icon)
   return (
     <View className={`${isDarkMode ? 'bg-[#1F2937]' : 'bg-white'}  shadow-sm shadow-gray-900  flex flex-row items-center  p-6 mb-6 rounded-lg w-[48%]`}>
       <View className={`${isDarkMode ? 'bg-blue-900' : 'bg-blue-100'} rounded-full p-2 mr-3`}>

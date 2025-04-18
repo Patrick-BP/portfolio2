@@ -1,80 +1,83 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, ScrollView, TouchableOpacity, StatusBar } from "react-native";
-import { WrenchIcon, CalendarIcon, CarIcon, Plus } from "lucide-react-native";
+import {
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  StatusBar,
+  Alert,
+  FlatList,
+} from "react-native";
+import {
+  WrenchIcon,
+  CalendarIcon,
+  CarIcon,
+  Plus,
+} from "lucide-react-native";
 import StatCard from "@/app/ui/statCard";
 import ExpenseCard from "@/app/ui/ExpenseCard";
 import EditExpenseModal from "@/app/ui/EditExpenseModal";
 import { useTheme } from "../contexts/ThemeContext";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/app/contexts/AuthContext";
+import useRequest from "@/app/services/useRequest";
+
+type Expense = {
+  id: string;
+  date: Date; // updated from string
+  category: string;
+  description: string;
+  amount: number;
+  createdAt?: Date;
+};
 
 export default function Index() {
-  // Move ALL hooks to the top before any conditional logic
   const { user, logout, loading } = useAuth();
   const router = useRouter();
   const { isDarkMode } = useTheme();
 
-  // Define types first
-  type Expense = {
-    id: string;
-    date: string;
-    category: string;
-    description: string;
-    amount: number;
-  };
-
-  // Define all useState hooks
-  const [recentExpenses, setRecentExpenses] = useState([
-    {
-      id: "1",
-      date: "May 10, 2023",
-      category: "Fuel",
-      description: "Shell Gas Station",
-      amount: 45.67,
-    },
-    {
-      id: "2",
-      date: "May 8, 2023",
-      category: "Maintenance",
-      description: "Oil Change",
-      amount: 39.99,
-    },
-    {
-      id: "3",
-      date: "May 5, 2023",
-      category: "Tolls",
-      description: "Highway Toll",
-      amount: 12.5,
-    },
-    {
-      id: "4",
-      date: "May 5, 2023",
-      category: "Tolls",
-      description: "Highway Toll",
-      amount: 12.5,
-    },
-    {
-      id: "5",
-      date: "May 5, 2023",
-      category: "Tolls",
-      description: "Highway Toll",
-      amount: 12.5,
-    },
-  ]);
-
+  const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState(null);
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
 
-  // Then useEffect hooks
+  const fetchExpenses = async () => {
+    try {
+      const response = await useRequest({
+        action: "get",
+        payload: {},
+        path: "expenses",
+      });
+
+      if (response.error) {
+        Alert.alert("Error", response.error);
+      } else if (response.data) {
+        const formattedExpenses = response.data.map((expense: any) => ({
+          ...expense,
+          date: new Date(expense.date),
+          createdAt: expense.createdAt ? new Date(expense.createdAt) : undefined,
+        }));
+
+        const sortedExpenses = formattedExpenses.sort((a, b) => {
+          const dateA = a.createdAt?.getTime() ?? a.date.getTime();
+          const dateB = b.createdAt?.getTime() ?? b.date.getTime();
+          return dateB - dateA;
+        });
+
+        setRecentExpenses(sortedExpenses);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to fetch expenses.");
+    }
+  };
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/welcome");
     }
+    fetchExpenses();
   }, [user, loading, router]);
-
-  
 
   const mileageStats = {
     thisMonth: 610,
@@ -86,7 +89,7 @@ export default function Index() {
   const handleEdit = (id: string) => {
     const expense = recentExpenses.find((e) => e.id === id);
     if (expense) {
-      setSelectedExpense(expense as any);
+      setSelectedExpense(expense);
       setModalVisible(true);
     }
   };
@@ -94,7 +97,7 @@ export default function Index() {
   const handleDelete = (id: string) => {
     const expense = recentExpenses.find((e) => e.id === id);
     if (expense) {
-      setExpenseToDelete(expense as any);
+      setExpenseToDelete(expense);
       setConfirmVisible(true);
     }
   };
@@ -117,39 +120,47 @@ export default function Index() {
   return (
     <View className={`flex-1 ${isDarkMode ? "bg-[#111827]" : "bg-blue-50"}`}>
       <View style={{ flex: 1, paddingTop: 40 }}>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} backgroundColor={isDarkMode ? '#1F2937' : '#fff'} />
+        <StatusBar
+          barStyle={isDarkMode ? "light-content" : "dark-content"}
+          backgroundColor={isDarkMode ? "#1F2937" : "#fff"}
+        />
       </View>
+
       <ScrollView className="mt-0 mx-4">
-        <Text className={`text-[24px] font-bold ml-4 mb-4 ${isDarkMode ? "text-gray-300" : "text-gray-800"}`}>
+        <Text
+          className={`text-[24px] font-bold ml-4 mb-4 ${
+            isDarkMode ? "text-gray-300" : "text-gray-800"
+          }`}
+        >
           Dashboard
         </Text>
 
         {/* Stats Grid */}
-        <View className="flex-row flex-wrap justify-between w-full ">
+        <View className="flex-row flex-wrap justify-between w-full">
           <StatCard
             title="This Month"
             value="$345.82"
-            icon={<CalendarIcon size={20} stroke={isDarkMode ? '#fff' : '#2563eb'} />}
+            icon={<CalendarIcon size={20} stroke={isDarkMode ? "#fff" : "#2563eb"} />}
             trend={{ value: 12, isPositive: false }}
           />
           <StatCard
             title="Miles Driven"
             value={`${mileageStats.thisMonth}`}
-            icon={<CarIcon size={20} stroke={isDarkMode ? '#fff' : '#2563eb'} />}
+            icon={<CarIcon size={20} stroke={isDarkMode ? "#fff" : "#2563eb"} />}
             subtitle="This Month"
           />
           <StatCard
             title="Business Miles"
             value={mileageStats.businessMiles.toLocaleString()}
-            icon={<CarIcon size={20} stroke={isDarkMode ? '#fff' : '#2563eb'} />}
-            subtitle={`$${(
-              mileageStats.businessMiles * mileageStats.mileageRate
-            ).toFixed(2)} Deduction`}
+            icon={<CarIcon size={20} stroke={isDarkMode ? "#fff" : "#2563eb"} />}
+            subtitle={`$${(mileageStats.businessMiles * mileageStats.mileageRate).toFixed(
+              2
+            )} Deduction`}
           />
           <StatCard
             title="Per Mile"
             value="$0.32"
-            icon={<WrenchIcon size={20} stroke={isDarkMode ? '#fff' : '#2563eb'} />}
+            icon={<WrenchIcon size={20} stroke={isDarkMode ? "#fff" : "#2563eb"} />}
             subtitle="Avg. Operating Cost"
           />
         </View>
@@ -166,33 +177,36 @@ export default function Index() {
             </Text>
             <Text className="text-sm text-blue-600">View All</Text>
           </View>
-          {recentExpenses.map((expense) => (
-            <ExpenseCard
-              key={expense.id}
-              _id={expense.id}
-              date={expense.date}
-              category={expense.category}
-              description={expense.description}
-              amount={expense.amount}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+          <FlatList
+            data={recentExpenses && recentExpenses.slice(0, 5)}
+            keyExtractor={(item) => item.id?.toString()}
+            renderItem={({ item }) => (
+              <ExpenseCard
+                _id={item.id}
+                date={item.date.toLocaleDateString()} // ✅ formatted to string
+                category={item.category}
+                description={item.description}
+                amount={item.amount}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            )}
+            ListEmptyComponent={<Text>No expenses found.</Text>}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
         </View>
       </ScrollView>
 
-      {/* Quick Add Floating Button */}
+      {/* Floating Button */}
       <TouchableOpacity
         className="absolute right-[180px] bottom-5 bg-blue-600 w-16 h-16 rounded-full justify-center items-center shadow-lg"
         aria-label="Quick add expense"
-        onPress={() => {
-          router.push("/addExpense");
-        }}
+        onPress={() => router.push("/addExpense")}
       >
         <Plus size={35} stroke="white" />
       </TouchableOpacity>
 
-      {/* Edit Expense Modal */}
+      {/* Edit Modal */}
       {isModalVisible && selectedExpense && (
         <EditExpenseModal
           visible={isModalVisible}
@@ -202,7 +216,7 @@ export default function Index() {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation */}
       {isConfirmVisible && expenseToDelete && (
         <View className="absolute inset-0 justify-center items-center bg-black/50 z-50">
           <View className="bg-white p-6 rounded-xl w-11/12">

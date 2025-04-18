@@ -37,7 +37,6 @@ const ExpenseCard = ({
     tripDistance && gallons ? (tripDistance / gallons).toFixed(1) : null
   const pricePerGallon = gallons ? (amount / gallons).toFixed(3) : null
 
-  console.log("id", _id)
   return (
     <View className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-sm p-4 mb-3`}
     >
