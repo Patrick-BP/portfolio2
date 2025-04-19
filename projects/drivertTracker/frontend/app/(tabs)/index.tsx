@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Text,
   View,
@@ -21,10 +21,11 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/app/contexts/AuthContext";
 import useRequest from "@/app/services/useRequest";
+import { useFocusEffect } from "@react-navigation/native";
 
 type Expense = {
   _id: string;
-  date: Date; // updated from string
+  date: Date;
   category: string;
   description: string;
   amount: number;
@@ -32,7 +33,7 @@ type Expense = {
 };
 
 export default function Index() {
-  const { user, logout, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const { isDarkMode } = useTheme();
 
@@ -59,7 +60,7 @@ export default function Index() {
           createdAt: expense.createdAt ? new Date(expense.createdAt) : undefined,
         }));
 
-        const sortedExpenses = formattedExpenses.sort((a : Expense, b: Expense) => {
+        const sortedExpenses = formattedExpenses.sort((a: Expense, b: Expense) => {
           const dateA = a.createdAt?.getTime() ?? a.date.getTime();
           const dateB = b.createdAt?.getTime() ?? b.date.getTime();
           return dateB - dateA;
@@ -75,9 +76,16 @@ export default function Index() {
   useEffect(() => {
     if (!loading && !user) {
       router.push("/welcome");
+    } else {
+      fetchExpenses();
     }
-    fetchExpenses();
-  }, [user, loading, router]);
+  }, [user, loading]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchExpenses();
+    }, [])
+  );
 
   const mileageStats = {
     thisMonth: 610,
@@ -119,21 +127,19 @@ export default function Index() {
 
   return (
     <View className={`flex-1 ${isDarkMode ? "bg-[#111827]" : "bg-blue-50"}`}>
-      <View style={{ flex: 1, paddingTop: 40 }}>
-        <StatusBar
-          barStyle={isDarkMode ? "light-content" : "dark-content"}
-          backgroundColor={isDarkMode ? "#1F2937" : "#fff"}
-        />
-      </View>
+      <StatusBar
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
+        backgroundColor={isDarkMode ? "#1F2937" : "#fff"}
+      />
 
-      <View className="mt-0 mx-4">
-        <Text
+      <View className="mt-4 mx-4">
+        {/* <Text
           className={`text-[24px] font-bold ml-4 mb-4 ${
             isDarkMode ? "text-gray-300" : "text-gray-800"
           }`}
         >
           Dashboard
-        </Text>
+        </Text> */}
 
         {/* Stats Grid */}
         <View className="flex-row flex-wrap justify-between w-full">
@@ -153,9 +159,7 @@ export default function Index() {
             title="Business Miles"
             value={mileageStats.businessMiles.toLocaleString()}
             icon={<CarIcon size={20} stroke={isDarkMode ? "#fff" : "#2563eb"} />}
-            subtitle={`$${(mileageStats.businessMiles * mileageStats.mileageRate).toFixed(
-              2
-            )} Deduction`}
+            subtitle={`$${(mileageStats.businessMiles * mileageStats.mileageRate).toFixed(2)} Deduction`}
           />
           <StatCard
             title="Per Mile"
@@ -177,46 +181,50 @@ export default function Index() {
             </Text>
             <Text className="text-sm text-blue-600">View All</Text>
           </View>
-          <FlatList
-            data={recentExpenses && recentExpenses.slice(0, 5)}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <ExpenseCard
-                _id={item._id}
-                date={item.date.toLocaleDateString()} // ✅ formatted to string
-                category={item.category}
-                description={item.description}
-                amount={item.amount}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            )}
-            ListEmptyComponent={<Text>No expenses found.</Text>}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          />
+          <View style={{ maxHeight: 320 }}>
+  <FlatList
+    data={recentExpenses.slice(0, 5)}
+    keyExtractor={(item) => item._id}
+    renderItem={({ item }) => (
+      <ExpenseCard
+        _id={item._id}
+        date={item.date.toLocaleDateString()}
+        category={item.category}
+        description={item.description}
+        amount={item.amount}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+    )}
+    ListEmptyComponent={<Text>No expenses found.</Text>}
+    showsVerticalScrollIndicator={true}
+  />
+</View>
         </View>
       </View>
 
-      {/* Floating Button */}
+      {/* Quick Add Floating Button */}
       <TouchableOpacity
         className="absolute right-[180px] bottom-5 bg-blue-600 w-16 h-16 rounded-full justify-center items-center shadow-lg"
         aria-label="Quick add expense"
-        onPress={() => router.push("/addExpense")}
+        onPress={() => {
+          router.push("/addExpense");
+        }}
       >
         <Plus size={35} stroke="white" />
       </TouchableOpacity>
 
-      {/* Edit Modal */}
+      {/* Edit Expense Modal */}
       {isModalVisible && selectedExpense && (
         <EditExpenseModal
           visible={isModalVisible}
           onClose={() => setModalVisible(false)}
-          expenses={selectedExpense}
-          onSaved={handleSave}
+          expense={selectedExpense}
+          onSave={handleSave}
         />
       )}
 
-      {/* Delete Confirmation */}
+      {/* Delete Confirmation Modal */}
       {isConfirmVisible && expenseToDelete && (
         <View className="absolute inset-0 justify-center items-center bg-black/50 z-50">
           <View className="bg-white p-6 rounded-xl w-11/12">
@@ -224,8 +232,7 @@ export default function Index() {
               Delete "{expenseToDelete.description}"?
             </Text>
             <Text className="text-gray-600 mb-4">
-              Are you sure you want to delete this expense? This action cannot
-              be undone.
+              Are you sure you want to delete this expense? This action cannot be undone.
             </Text>
             <View className="flex-row justify-between">
               <TouchableOpacity

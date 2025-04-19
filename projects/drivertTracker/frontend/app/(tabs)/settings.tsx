@@ -318,9 +318,9 @@ const Settings = () => {
 
   return (
     <ScrollView className={`p-4 ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'}`}>
-      <Text className={`text-[24px] font-bold mb-4 mt-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
+      {/* <Text className={`text-[24px] font-bold mb-4 mt-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
         Settings
-      </Text>
+      </Text> */}
 
       {/* Profile Section */}
       <View className={cardClass}>

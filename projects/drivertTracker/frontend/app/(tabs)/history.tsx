@@ -17,6 +17,7 @@ import ExpenseCard from '@/app/ui/ExpenseCard';
 import EditExpenseModal from '@/app/ui/EditExpenseModal';
 import { useTheme } from '@/app/contexts/ThemeContext';
 import useRequest from '@/app/services/useRequest';
+import { useFocusEffect } from '@react-navigation/native';
 
 const History = () => {
   const { isDarkMode } = useTheme();
@@ -122,6 +123,13 @@ const History = () => {
     setFilteredExpenses(filtered);
   }, [searchTerm, selectedCategory, startDate, endDate, expenses]);
 
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchExpenses();
+    }, [])
+  );
+  
   // Handle pull-to-refresh
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -298,20 +306,21 @@ const History = () => {
     <View className={`flex-1 ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'}`}>
       <View className="p-4">
         <View className="flex-row justify-between items-center mb-4 mt-4">
-          <Text className={`text-[24px] font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
+          {/* <Text className={`text-[24px] font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
             Expense History
-          </Text>
-          <TouchableOpacity 
+          </Text> */}
+          {/* <TouchableOpacity 
             onPress={handleRefresh}
             disabled={loading || refreshing}
             className="p-2"
+            
           >
             <RefreshCw 
               size={20} 
               stroke={isDarkMode ? '#6b7280' : '#4b5563'} 
               className={refreshing ? 'animate-spin' : ''}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Search and Filter */}

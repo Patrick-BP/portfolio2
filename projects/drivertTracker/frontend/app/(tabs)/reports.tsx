@@ -178,9 +178,9 @@ const Reports = () => {
 
   return (
   
-        <>
-      <ScrollView style={{ padding: 16, backgroundColor: isDarkMode ? '#111827' : '#f0f4ff' }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16, color: isDarkMode ? '#ccc' : '#1f2937' }}>Reports</Text>
+    <View className='h-full '>
+      <View style={{ padding: 16, backgroundColor: isDarkMode ? '#111827' : '#f0f4ff' }}>
+        {/* <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16, color: isDarkMode ? '#ccc' : '#1f2937' }}>Reports</Text> */}
 
         <View style={{ flexDirection: 'row', borderWidth: 1, borderRadius: 8, marginBottom: 16, borderColor: isDarkMode ? '#374151' : '#d1d5db' }}>
           {(['month', 'quarter', 'year', 'custom'] as Array<keyof typeof dataByPeriod>).map((p) => (
@@ -192,134 +192,141 @@ const Reports = () => {
               <Text style={{ color: period === p ? '#fff' : isDarkMode ? '#ccc' : '#374151' }}>{p.toUpperCase()}</Text>
             </TouchableOpacity>
           ))}
-        </View>
-
-        {/* Mileage Summary */}
-        <View style={cardStyle}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Car size={30} stroke={`${isDarkMode ? '#fff' :'#2563eb'}`} style={{ marginRight: 8 }} />
-              <Text style={headingStyle}>Mileage Summary</Text>
-            </View>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Download size={20} stroke={`${isDarkMode ? '#fff' :'#2563eb'}`} style={{ marginRight: 4 }} />
-              <Text style={{ color: `${isDarkMode? '#fff' : '#2563eb' }` }}>Export</Text>
-            </TouchableOpacity>
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-            <View>
-              <Text style={textStyle}>Total Miles</Text>
-              <Text style={[textStyle, { fontSize: 20, fontWeight: 'bold' }]}>{summary.totalMiles}</Text>
-            </View>
-            <View>
-              <Text style={textStyle}>Business Miles</Text>
-              <Text style={[textStyle, { fontSize: 20, fontWeight: 'bold' }]}>{summary.businessMiles}</Text>
-              <Text style={textStyle}>({((summary.businessMiles / (summary.totalMiles || 1)) * 100).toFixed(1)}%)</Text>
-            </View>
-          </View>
-          <View>
-            <Text style={textStyle}>Standard Mileage Deduction</Text>
-            <Text style={[textStyle, { fontWeight: 'bold' }]}>${summary.mileageDeduction.toFixed(2)}</Text>
-            <View style={{ height: 8, width: '100%', backgroundColor: '#d1d5db', borderRadius: 8, overflow: 'hidden', marginTop: 4 }}>
-              <View style={{ height: 8, backgroundColor: '#2563eb', width: `${(summary.businessMiles / (summary.totalMiles || 1)) * 100}%` }} />
-            </View>
-          </View>
-        </View>
-
-        {/* Monthly Mileage Chart */}
-        {summary.monthlyMiles.length > 0 && (
-  <View style={cardStyle}>
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-      <Text style={headingStyle}>Monthly Mileage</Text>
-      <Calendar size={20} stroke="#2563eb" />
-    </View>
-    <View style={{ marginBottom: 8 }}>
-      {summary.monthlyMiles.map((item) => {
-        const max = Math.max(...summary.monthlyMiles.map((m) => m.miles))+2000;
-        return (
-          <View key={item.month} style={{ marginBottom: 12 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-              <Text style={textStyle}>{item.month}</Text>
-              <Text style={textStyle}>{item.miles} mi</Text>
-            </View>
-            <View style={{ height: 8, width: '100%', backgroundColor: '#d1d5db', borderRadius: 8 }}>
-              <View
-                style={{
-                  width: `${(item.miles / max) * 100}%`,
-                  height: 8,
-                  backgroundColor: '#2563eb',
-                  borderRadius: 8,
-                }}
-              />
-            </View>
-          </View>
-        );
-      })}
-    </View>
-  </View>
-)}
-
-        {/* Category Breakdown */}
-        {summary.byCategory.length > 0 && (
-          <View style={cardStyle}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-              <Text style={headingStyle}>Category Breakdown</Text>
-              <PieChart size={20} stroke="#2563eb" />
-            </View>
-            {summary.byCategory.map((cat) => (
-              <View key={cat.category} style={{ marginBottom: 12 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={textStyle}>{cat.category}</Text>
-                  <Text style={textStyle}>${cat.amount.toFixed(2)} ({cat.percentage}%)</Text>
+            <ScrollView className='h-full'>
+              {/* Mileage Summary */}
+              <View style={cardStyle}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Car size={30} stroke={`${isDarkMode ? '#fff' :'#2563eb'}`} style={{ marginRight: 8 }} />
+                    <Text style={headingStyle}>Mileage Summary</Text>
+                  </View>
+                  <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Download size={20} stroke={`${isDarkMode ? '#fff' :'#2563eb'}`} style={{ marginRight: 4 }} />
+                    <Text style={{ color: `${isDarkMode? '#fff' : '#2563eb' }` }}>Export</Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={{ height: 8, backgroundColor: '#d1d5db', borderRadius: 8, overflow: 'hidden' }}>
-                  <View style={{ height: 8, backgroundColor: '#2563eb', width: `${cat.percentage}%` }} />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <View>
+                    <Text style={textStyle}>Total Miles</Text>
+                    <Text style={[textStyle, { fontSize: 20, fontWeight: 'bold' }]}>{summary.totalMiles}</Text>
+                  </View>
+                  <View>
+                    <Text style={textStyle}>Business Miles</Text>
+                    <Text style={[textStyle, { fontSize: 20, fontWeight: 'bold' }]}>{summary.businessMiles}</Text>
+                    <Text style={textStyle}>({((summary.businessMiles / (summary.totalMiles || 1)) * 100).toFixed(1)}%)</Text>
+                  </View>
+                </View>
+                <View>
+                  <Text style={textStyle}>Standard Mileage Deduction</Text>
+                  <Text style={[textStyle, { fontWeight: 'bold' }]}>${summary.mileageDeduction.toFixed(2)}</Text>
+                  <View style={{ height: 8, width: '100%', backgroundColor: '#d1d5db', borderRadius: 8, overflow: 'hidden', marginTop: 4 }}>
+                    <View style={{ height: 8, backgroundColor: '#2563eb', width: `${(summary.businessMiles / (summary.totalMiles || 1)) * 100}%` }} />
+                  </View>
                 </View>
               </View>
-            ))}
-          </View>
-        )}
 
-{/* Updated Fuel Efficiency Section */}
-{summary.fuelMetrics.monthlyGallons.length > 0 && (
-  <View style={cardStyle}>
-    <Text style={headingStyle}>Fuel Efficiency</Text>
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
-      <View>
-        <Text style={textStyle}>Average MPG</Text>
-        <Text style={[textStyle, { fontSize: 20, fontWeight: 'bold' }]}>{summary.fuelMetrics.avgMPG}</Text>
-      </View>
-      <View>
-        <Text style={textStyle}>Avg. Price/Gallon</Text>
-        <Text style={[textStyle, { fontSize: 20, fontWeight: 'bold' }]}>${summary.fuelMetrics.avgPricePerGallon.toFixed(2)}</Text>
-      </View>
+              {/* Monthly Mileage Chart */}
+              {summary.monthlyMiles.length > 0 && (
+                  <View style={cardStyle}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <Text style={headingStyle}>Monthly Mileage</Text>
+                      <Calendar size={20} stroke="#2563eb" />
+                    </View>
+                    <View style={{ marginBottom: 8 }}>
+                      {summary.monthlyMiles.map((item) => {
+                        const max = Math.max(...summary.monthlyMiles.map((m) => m.miles))+2000;
+                        return (
+                          <View key={item.month} style={{ marginBottom: 12 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                              <Text style={textStyle}>{item.month}</Text>
+                              <Text style={textStyle}>{item.miles} mi</Text>
+                            </View>
+                            <View style={{ height: 8, width: '100%', backgroundColor: '#d1d5db', borderRadius: 8 }}>
+                              <View
+                                style={{
+                                  width: `${(item.miles / max) * 100}%`,
+                                  height: 8,
+                                  backgroundColor: '#2563eb',
+                                  borderRadius: 8,
+                                }}
+                              />
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
+
+              {/* Category Breakdown */}
+              {summary.byCategory.length > 0 && (
+                <View style={cardStyle}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <Text style={headingStyle}>Category Breakdown</Text>
+                    <PieChart size={20} stroke="#2563eb" />
+                  </View>
+                  {summary.byCategory.map((cat) => (
+                    <View key={cat.category} style={{ marginBottom: 12 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={textStyle}>{cat.category}</Text>
+                        <Text style={textStyle}>${cat.amount.toFixed(2)} ({cat.percentage}%)</Text>
+                      </View>
+                      <View style={{ height: 8, backgroundColor: '#d1d5db', borderRadius: 8, overflow: 'hidden' }}>
+                        <View style={{ height: 8, backgroundColor: '#2563eb', width: `${cat.percentage}%` }} />
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Updated Fuel Efficiency Section */}
+              {summary.fuelMetrics.monthlyGallons.length > 0 && (
+                <View style={cardStyle}>
+                  <Text style={headingStyle}>Fuel Efficiency</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <View>
+                      <Text style={textStyle}>Average MPG</Text>
+                      <Text style={[textStyle, { fontSize: 20, fontWeight: 'bold' }]}>{summary.fuelMetrics.avgMPG}</Text>
+                    </View>
+                    <View>
+                      <Text style={textStyle}>Avg. Price/Gallon</Text>
+                      <Text style={[textStyle, { fontSize: 20, fontWeight: 'bold' }]}>${summary.fuelMetrics.avgPricePerGallon.toFixed(2)}</Text>
+                    </View>
+                  </View>
+                  <Text style={[textStyle, { marginBottom: 8 }]}>Monthly Fuel Consumption</Text>
+                  <View>
+                    {summary.fuelMetrics.monthlyGallons.map((item) => {
+                      const max = Math.max(...summary.fuelMetrics.monthlyGallons.map((m) => m.gallons)) + 500;
+                      return (
+                        <View key={item.month} style={{ marginBottom: 12 }}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <Text style={textStyle}>{item.month}</Text>
+                            <Text style={textStyle}>{item.gallons.toFixed(0)} gal</Text>
+                          </View>
+                          <View style={{ height: 8, backgroundColor: '#d1d5db', borderRadius: 8 }}>
+                            <View
+                              style={{
+                                width: `${(item.gallons / max) * 100}%`,
+                                height: 8,
+                                backgroundColor: '#2563eb',
+                                borderRadius: 8,
+                              }}
+                            />
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>)}
+                <View style={cardStyle}></View>
+              
+            </ScrollView>
+
+
     </View>
-    <Text style={[textStyle, { marginBottom: 8 }]}>Monthly Fuel Consumption</Text>
-    <View>
-      {summary.fuelMetrics.monthlyGallons.map((item) => {
-        const max = Math.max(...summary.fuelMetrics.monthlyGallons.map((m) => m.gallons)) + 500;
-        return (
-          <View key={item.month} style={{ marginBottom: 12 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-              <Text style={textStyle}>{item.month}</Text>
-              <Text style={textStyle}>{item.gallons.toFixed(0)} gal</Text>
-            </View>
-            <View style={{ height: 8, backgroundColor: '#d1d5db', borderRadius: 8 }}>
-              <View
-                style={{
-                  width: `${(item.gallons / max) * 100}%`,
-                  height: 8,
-                  backgroundColor: '#2563eb',
-                  borderRadius: 8,
-                }}
-              />
-            </View>
-          </View>
-        );
-      })}
-    </View>
-  </View>)}
-      </ScrollView>
+     
+
 
       {/* Custom Date Picker Modal */}
       <Modal visible={customModalVisible} transparent animationType="slide">
@@ -358,7 +365,8 @@ const Reports = () => {
         }}
         onCancel={() => setDatePickerOpen(false)}
       />
-    </>
+      
+    </View>
   
   );
 };

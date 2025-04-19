@@ -62,8 +62,17 @@ const _layout = () => {
     }}
     >
       <Tabs.Screen name="index" options={{
-         title: 'Home', 
-         headerShown: false,
+         title: 'Dashboard', 
+         headerShown: true,
+         headerTitle: 'Dashboard',
+        headerStyle: {
+          backgroundColor: isDarkMode? '#1F2937' : '#1E3A8A',
+        },
+        headerTintColor: 'white',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 30,
+        },
           tabBarIcon: ({ focused }) => (
             <TabIcon  focused={focused} 
             icon={icons.home} 
@@ -74,7 +83,16 @@ const _layout = () => {
       
       <Tabs.Screen name="addExpense" options={{ 
         title: 'Add', 
-        headerShown: false ,
+        headerShown: true,
+         headerTitle: 'Add Expense',
+        headerStyle: {
+          backgroundColor: isDarkMode? '#1F2937' : '#1E3A8A',
+        },
+        headerTintColor: 'white',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 30,
+        },
           tabBarIcon: ({ focused }) => (
             <TabIcon  focused={focused} 
             icon={icons.add} 
@@ -84,7 +102,16 @@ const _layout = () => {
 
       <Tabs.Screen name="history" options={{ 
         title: 'History', 
-        headerShown: false ,
+        headerShown: true,
+         headerTitle: 'Expense History',
+        headerStyle: {
+          backgroundColor: isDarkMode? '#1F2937' : '#1E3A8A',
+        },
+        headerTintColor: 'white',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 30,
+        },
         tabBarIcon: ({ focused }) => (
           <TabIcon  focused={focused} 
           icon={icons.history} 
@@ -93,7 +120,16 @@ const _layout = () => {
         
         <Tabs.Screen name="reports" options={{ 
           title: 'Reports',
-          headerShown: false ,
+          headerShown: true,
+         headerTitle: 'Reports',
+        headerStyle: {
+          backgroundColor: isDarkMode? '#1F2937' : '#1E3A8A',
+        },
+        headerTintColor: 'white',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 30,
+        },
           tabBarIcon: ({ focused }) => (
               <TabIcon  focused={focused} 
               icon={icons.reports} 
@@ -103,7 +139,16 @@ const _layout = () => {
 
         <Tabs.Screen name="settings" options={{ 
           title: 'Settings',
-          headerShown: false ,
+          headerShown: true,
+         headerTitle: 'Settings',
+        headerStyle: {
+          backgroundColor: isDarkMode? '#1F2937' : '#1E3A8A',
+        },
+        headerTintColor: 'white',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 30,
+        },
           tabBarIcon: ({ focused }) => (
               <TabIcon  focused={focused} 
               icon={icons.settings} 

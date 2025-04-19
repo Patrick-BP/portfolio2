@@ -13,10 +13,6 @@ const Add = () => {
   const [imageToSave, setImagetToSave] = useState()
 
 
-
-
-
-
   const handleSubmit = async (expense: any) => {
 
     try {
@@ -56,11 +52,11 @@ const Add = () => {
   }
 
   return (
-    <ScrollView className={`flex-1 ${isDarkMode ? 'bg-gray-800' : 'bg-blue-50'}`}>
-      <Text className={`text-2xl font-bold ml-4 mt-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
+    <ScrollView className={`flex-1 mt-0 ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'}`}>
+      {/* <Text className={`text-2xl font-bold ml-4 mt-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
         Add Expense
       </Text>
-      
+       */}
       {isLoading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color={isDarkMode ? '#60A5FA' : '#3B82F6'} />
