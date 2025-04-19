@@ -23,7 +23,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import useRequest from "@/app/services/useRequest";
 
 type Expense = {
-  id: string;
+  _id: string;
   date: Date; // updated from string
   category: string;
   description: string;
@@ -59,7 +59,7 @@ export default function Index() {
           createdAt: expense.createdAt ? new Date(expense.createdAt) : undefined,
         }));
 
-        const sortedExpenses = formattedExpenses.sort((a, b) => {
+        const sortedExpenses = formattedExpenses.sort((a : Expense, b: Expense) => {
           const dateA = a.createdAt?.getTime() ?? a.date.getTime();
           const dateB = b.createdAt?.getTime() ?? b.date.getTime();
           return dateB - dateA;
@@ -87,7 +87,7 @@ export default function Index() {
   };
 
   const handleEdit = (id: string) => {
-    const expense = recentExpenses.find((e) => e.id === id);
+    const expense = recentExpenses.find((e) => e._id === id);
     if (expense) {
       setSelectedExpense(expense);
       setModalVisible(true);
@@ -95,7 +95,7 @@ export default function Index() {
   };
 
   const handleDelete = (id: string) => {
-    const expense = recentExpenses.find((e) => e.id === id);
+    const expense = recentExpenses.find((e) => e._id === id);
     if (expense) {
       setExpenseToDelete(expense);
       setConfirmVisible(true);
@@ -104,7 +104,7 @@ export default function Index() {
 
   const confirmDelete = () => {
     setRecentExpenses((prev) =>
-      prev.filter((e) => e.id !== expenseToDelete?.id)
+      prev.filter((e) => e._id !== expenseToDelete?._id)
     );
     setConfirmVisible(false);
     setExpenseToDelete(null);
@@ -112,7 +112,7 @@ export default function Index() {
 
   const handleSave = (updatedExpense: Expense) => {
     setRecentExpenses((prev) =>
-      prev.map((e) => (e.id === updatedExpense.id ? updatedExpense : e))
+      prev.map((e) => (e._id === updatedExpense._id ? updatedExpense : e))
     );
     setModalVisible(false);
   };
@@ -126,7 +126,7 @@ export default function Index() {
         />
       </View>
 
-      <ScrollView className="mt-0 mx-4">
+      <View className="mt-0 mx-4">
         <Text
           className={`text-[24px] font-bold ml-4 mb-4 ${
             isDarkMode ? "text-gray-300" : "text-gray-800"
@@ -179,10 +179,10 @@ export default function Index() {
           </View>
           <FlatList
             data={recentExpenses && recentExpenses.slice(0, 5)}
-            keyExtractor={(item) => item.id?.toString()}
+            keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <ExpenseCard
-                _id={item.id}
+                _id={item._id}
                 date={item.date.toLocaleDateString()} // ✅ formatted to string
                 category={item.category}
                 description={item.description}
@@ -195,7 +195,7 @@ export default function Index() {
             contentContainerStyle={{ paddingBottom: 20 }}
           />
         </View>
-      </ScrollView>
+      </View>
 
       {/* Floating Button */}
       <TouchableOpacity
@@ -211,8 +211,8 @@ export default function Index() {
         <EditExpenseModal
           visible={isModalVisible}
           onClose={() => setModalVisible(false)}
-          expense={selectedExpense}
-          onSave={handleSave}
+          expenses={selectedExpense}
+          onSaved={handleSave}
         />
       )}
 

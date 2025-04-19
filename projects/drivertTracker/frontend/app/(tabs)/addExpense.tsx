@@ -2,18 +2,23 @@ import { StyleSheet, Text, View, Alert, ActivityIndicator, ScrollView } from 're
 import React, { useState } from 'react'
 import ExpenseForm from '@/app/ui/ExpenseForm'
 import { useTheme } from '../contexts/ThemeContext'
-import { useNavigation } from '@react-navigation/native'
 import useRequest from '@/app/services/useRequest'
 import { useRouter } from 'expo-router'
 
 const Add = () => {
-  const navigation = useNavigation()
+ 
   const { isDarkMode } = useTheme()
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const router = useRouter();
+  const [imageToSave, setImagetToSave] = useState()
+
+
+
+
+
 
   const handleSubmit = async (expense: any) => {
-    
+
     try {
       setIsLoading(true)
       
@@ -21,20 +26,28 @@ const Add = () => {
       const result = await useRequest({
         action: 'post',
         path: 'expenses',
-        payload: expense
+        payload: {...expense, receipt:null}
+      }).then(response =>{
+
+        useRequest({
+          action: 'patch',
+          path: 'expenses',
+          payload:  expense.receipt,
+          id: response.data._id
+        })
+      }).catch(err =>{
+        Alert.alert('Error', err)
+        return
       })
       
       setIsLoading(false)
       
-      if (result.error) {
-        Alert.alert('Error', result.error)
-        return
-      }
+     
       
 
       
       // Navigate back to dashboard after successful addition
-      router.push('/(tabs)')
+      router.push('/(tabs)/history')
     } catch (error) {
       setIsLoading(false)
       

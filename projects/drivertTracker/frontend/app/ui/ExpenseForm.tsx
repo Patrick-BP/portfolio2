@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Alert
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import { Upload } from 'lucide-react-native';
@@ -57,6 +58,7 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
   const [previousOdometer, setPreviousOdometer] = useState(initialValues?. previous_mileage?.toString() || '');
   const [gallons, setGallons] = useState(initialValues?.gallons?.toString() || '');
   const [receipt, setReceipt] = useState<any>(null);
+  const [receiptImg, setReceiptImg] = useState<any>()
 
   const tripDistance =
     odometer && previousOdometer
@@ -120,15 +122,47 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
       return;
     }
 
-    const result = source === 'camera'
-      ? await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
+    const result =  source === 'camera'
+      ? await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1, allowsEditing: true, base64: false,})
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1, allowsEditing: true, base64: false,});
 
     if (!result.canceled && result.assets.length > 0) {
-      setReceipt(result.assets[0]);
+      setReceiptImg(result.assets[0].uri);
+      await uploadReceiptImage(result);
     }
+    
+    
   };
-
+const uploadReceiptImage = async (result: any) => {
+      
+      try {
+        const asset = result.assets[0];
+  
+        const localUri = asset.uri;
+        const filename = asset.fileName || `receipt_${Date.now()}.jpg`;
+        const extension = filename.split('.').pop()?.toLowerCase();
+        const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
+        
+        const fileToUpload = {
+          uri: localUri.startsWith('file://') ? localUri : `file://${localUri}`,
+          name: filename,
+          type: mimeType,
+        };
+        console.log(fileToUpload)
+        // FormData instance
+        const formData = new FormData();
+        // @ts-ignore
+        formData.append('receipt', fileToUpload);
+        setReceipt(formData)
+ 
+   
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        Alert.alert('Error', 'Failed to upload profile image. Please try again.');
+      } finally {
+        
+      }
+    };
   return (
     <ScrollView className="p-4 ">
       <View>
@@ -242,9 +276,9 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
             <Text className={isDarkMode ? 'text-white' : 'text-black'}> Upload Receipt</Text>
           </TouchableOpacity>
         </View>
-        {receipt && (
+        {receiptImg && (
           <Image
-            source={{ uri: receipt.uri }}
+            source={{ uri: receiptImg }}
             className="mt-2 w-32 h-32 rounded-md"
             resizeMode="cover"
           />

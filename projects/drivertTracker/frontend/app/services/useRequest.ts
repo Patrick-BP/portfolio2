@@ -20,7 +20,10 @@ const useRequest = (config: RequestType): Promise<RequestResult> => {
     return new Promise(async (resolve) => {
        
             const token = await AsyncStorage.getItem('token');
-            const headers = {
+            const headers = config.payload instanceof FormData ? {
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            } : {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -32,7 +35,7 @@ const useRequest = (config: RequestType): Promise<RequestResult> => {
             const result = await fetch(url, {
                 method: action.toUpperCase(),
                 headers: headers,
-                body: action !== 'get' ? JSON.stringify(payload) : undefined,
+                body: action !== 'get' ? payload instanceof FormData ? payload : JSON.stringify(payload) : undefined   ,
             }).then(response => response.json()).then(data => {
                 if(data.msg) return resolve({ data: null, error: data.msg });
                 resolve({ data, error: null });

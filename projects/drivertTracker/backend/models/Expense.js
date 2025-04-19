@@ -6,7 +6,7 @@ const expenseSchema = new mongoose.Schema({
     date: Date,
     description: String,
     amount: Number,
-    receipt_url: String,
+    receipt: String,
     previous_mileage: Number,
     current_mileage: Number,
     gallons: Number,

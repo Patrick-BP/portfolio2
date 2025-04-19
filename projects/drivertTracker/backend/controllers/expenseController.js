@@ -1,22 +1,40 @@
 const Expense = require('../models/Expense');
 
 exports.addExpense = async (req, res) => {
-  try{
-    // if (!req.file) {
-    //   return res.status(400).json({ msg: 'Please upload a receipt' });
-    // }
-    const expenseData = { ...req.body, user: req.user.id };
-    console.log(req.body)
+  console.log("📥 req.file:", req.file);
+  try {
+    const {
+      category,
+      date,
+      description,
+      amount,
+      current_mileage,
+      previous_mileage,
+      gallons
+    } = req.body;
+
+    const expenseData = {
+      user: req.user.id,
+      category,
+      date,
+      description,
+      amount,
+    };
+
+    if (current_mileage) expenseData.current_mileage = current_mileage;
+    if (previous_mileage) expenseData.previous_mileage = previous_mileage;
+    if (gallons) expenseData.gallons = gallons;
+
+    // Only use uploaded file, not raw req.body.receipt
     if (req.file) {
-      expenseData.receipt_url = `/uploads/receipts/${req.file.filename}`;
+      expenseData.receipt = `/uploads/receipts/${req.file.filename}`;
     }
-    
+
     const expense = await Expense.create(expenseData);
     res.json(expense);
-
-  }catch (error) {
+  } catch (error) {
     res.status(500).json({ msg: 'Server Error', error: error.message });
-  }  
+  }
 };
 
 
@@ -29,7 +47,8 @@ exports.getExpenses = async (req, res) => {
 
 exports.updateExpense = async (req, res) => {
   const updateData = { ...req.body };
-  if (req.file) updateData.receipt_url = `/uploads/receipts/${req.file.filename}`;
+
+  if (req.file) updateData.receipt = `/uploads/receipts/${req.file.filename}`;
 
   const expense = await Expense.findOneAndUpdate(
     { _id: req.params.id, user: req.user.id },

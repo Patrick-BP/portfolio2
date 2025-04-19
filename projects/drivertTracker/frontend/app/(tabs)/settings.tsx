@@ -76,7 +76,7 @@ const Settings = () => {
           name: result.data.name || '',
           email: result.data.email || '',
         });
-        setProfileImage(result.data.profile_picture)
+        setProfileImage(`http://192.168.0.233:3000${result.data.profile_picture}`)
         
         if (result.data.profileImageUrl) {
           setProfileImage(result.data.profileImageUrl);
@@ -140,9 +140,6 @@ const Settings = () => {
 
       
       if (!result.canceled && result.assets.length > 0) {
-   
-
-      
         setProfileImage(result.assets[0].uri);
         await uploadProfileImage(result);
       }
@@ -161,9 +158,11 @@ const Settings = () => {
       const filename = asset.fileName || `profile_${Date.now()}.jpg`;
       const extension = filename.split('.').pop()?.toLowerCase();
       const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
+
+      
       
       const fileToUpload = {
-        uri: localUri.startsWith('file://') ? localUri : `file:///${localUri}`,
+        uri: localUri.startsWith('file://') ? localUri : `file://${localUri}`,
         name: filename,
         type: mimeType,
       };
@@ -190,6 +189,7 @@ const Settings = () => {
         body: formData,
       });
 
+      
       // Check if response is OK
       if (response.ok) {
         // Try to parse as JSON
@@ -330,7 +330,7 @@ const Settings = () => {
               {uploadingImage ? (
                 <ActivityIndicator size="small" color="#2563eb" />
               ) : profileImage ? (
-                <Image source={{ uri: `http://192.168.0.233:3000${profileImage}` }} className="w-full h-full rounded-full" />
+                <Image source={{ uri: `${profileImage}` }} className="w-full h-full rounded-full" />
               ) : (
                 <User size={69} stroke="#2563eb" />
               )}
@@ -407,7 +407,7 @@ const Settings = () => {
             </Text>
           </View>
           <TouchableOpacity onPress={() => setModalVehicleVisible(true)}>
-            <ChevronRight size={18} stroke="#9ca3af" />
+            <ChevronRight size={24} stroke="#9ca3af" />
           </TouchableOpacity>
         </View>
         {vehicle.make ? (

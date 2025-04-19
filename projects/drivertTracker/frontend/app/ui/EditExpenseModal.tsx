@@ -13,23 +13,23 @@ type Expense = {
 type EditExpenseModalProps = {
   visible: boolean;
   onClose: () => void;
-  expense: Expense;
-  onSave: (updatedExpense: Expense) => void;
+  expenses: Expense;
+  onSaved: (updatedExpense: Expense) => void;
 };
 
 export default function EditExpenseModal({
   visible,
   onClose,
-  expense,
-  onSave,
+  expenses,
+  onSaved,
 }: EditExpenseModalProps) {
-  const [description, setDescription] = useState(expense.description);
-  const [amount, setAmount] = useState(String(expense.amount));
+  const [description, setDescription] = useState(expenses.description);
+  const [amount, setAmount] = useState(String(expenses.amount));
 
   useEffect(() => {
-    setDescription(expense.description);
-    setAmount(String(expense.amount));
-  }, [expense]);
+    setDescription(expenses.description);
+    setAmount(String(expenses.amount));
+  }, [expenses]);
 
   const handleSave = () => {
     if (!description || isNaN(parseFloat(amount))) {
@@ -37,8 +37,8 @@ export default function EditExpenseModal({
       return;
     }
 
-    onSave({
-      ...expense,
+    onSaved({
+      ...expenses,
       description,
       amount: parseFloat(amount),
     });

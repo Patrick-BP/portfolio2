@@ -6,7 +6,7 @@ exports.getUser = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
- 
+
   const updateData = {
     name: req.body.name,
     email: req.body.email,
