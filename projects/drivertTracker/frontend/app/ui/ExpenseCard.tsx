@@ -66,23 +66,7 @@ const ExpenseCard = ({
           ${amount.toFixed(2)}
         </Text>
       </View>
-      <View className="flex-row justify-end mt-3 space-x-2">
-        <TouchableOpacity
-          onPress={() => onEdit(_id)}
-          className={`p-1 mr-2 text-blue-500 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-blue-50'}`}
-          aria-label="Edit expense"
-        >
-          <Pencil size={16} stroke="#2563eb"/>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => onDelete(_id)}
-          className={`p-1 text-red-500 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-red-50'}`}
-          aria-label="Delete expense"
-        >
-          <Trash2 size={16} stroke="red"/>
-        </TouchableOpacity>
-      </View>
+     
     </View>
   )
 }

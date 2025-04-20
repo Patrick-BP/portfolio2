@@ -23,12 +23,12 @@ export default function EditExpenseModal({
   expenses,
   onSaved,
 }: EditExpenseModalProps) {
-  const [description, setDescription] = useState(expenses.description);
-  const [amount, setAmount] = useState(String(expenses.amount));
+  const [description, setDescription] = useState(expenses?.description);
+  const [amount, setAmount] = useState(String(expenses?.amount));
 
   useEffect(() => {
-    setDescription(expenses.description);
-    setAmount(String(expenses.amount));
+    setDescription(expenses?.description);
+    setAmount(String(expenses?.amount));
   }, [expenses]);
 
   const handleSave = () => {

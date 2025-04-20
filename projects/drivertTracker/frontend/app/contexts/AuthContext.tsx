@@ -1,8 +1,8 @@
 // contexts/AuthContext.tsx
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { router } from 'expo-router';
-import useRequest from '@/app/services/useRequest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useRequest from '@/app/services/useRequest';
 
 type User = {
   email: string;
@@ -15,7 +15,7 @@ type AuthContextType = {
   loading: boolean;
   initialized: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string , email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -26,24 +26,37 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
-  // Auth initialization
+  // Decode JWT and check if expired
+  const isTokenValid = (token: string): boolean => {
+    try {
+      const [, payloadBase64] = token.split('.');
+      const decoded = JSON.parse(atob(payloadBase64));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return decoded.exp && decoded.exp > currentTime;
+    } catch (e) {
+      console.error("Token decode failed:", e);
+      return false;
+    }
+  };
+
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Check if user is logged in (e.g., from AsyncStorage)
         const storedUser = await AsyncStorage.getItem('user');
         const storedToken = await AsyncStorage.getItem('token');
-        
-        if (storedUser && storedToken) {
+
+        if (storedUser && storedToken && isTokenValid(storedToken)) {
           setUser(JSON.parse(storedUser));
-          router.push('/(tabs)'); // Redirect to home page
+          router.push('/(tabs)');
         } else {
+          await AsyncStorage.multiRemove(['user', 'token']);
           setUser(null);
-          router.push('/welcome'); // Redirect to login page
+          router.push('/welcome');
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
         setUser(null);
+        router.push('/welcome');
       } finally {
         setLoading(false);
         setInitialized(true);
@@ -60,25 +73,18 @@ function AuthProvider({ children }: { children: ReactNode }) {
         action: 'post',
         payload: { email, password },
         path: 'auth',
-        route: 'login'
+        route: 'login',
       });
-      
-      if (error) {
-        throw new Error(error);
-      }
-      
+
+      if (error) throw new Error(error);
+
       if (data && data.token && data.user) {
-        // Store auth data
         await AsyncStorage.setItem('user', JSON.stringify(data.user));
         await AsyncStorage.setItem('token', data.token);
-        
-        // Update state
         setUser(data.user);
-        
-        // Navigate to home
         router.push('/(tabs)');
       } else {
-        console.log('Invalid response from server');
+        throw new Error('Invalid response from server');
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -93,23 +99,20 @@ function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await useRequest({
         action: 'post',
-        payload: {name, email, password },
+        payload: { name, email, password },
         path: 'auth',
-        route: 'register'
+        route: 'register',
       });
-      
-      if (error) {
-        throw new Error(error);
-      }
-      
+
+      if (error) throw new Error(error);
+
       if (data.payload && data.payload.user) {
-        // Don't set the user or token yet - they need to login
-        router.push('/(auth)/login'); // Redirect to login after registration
+        router.push('/(auth)/login');
       } else {
         throw new Error('Registration failed');
       }
     } catch (error) {
-     
+      console.error("Registration error:", error);
       throw new Error(error instanceof Error ? error.message : 'Registration failed');
     } finally {
       setLoading(false);
@@ -118,14 +121,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      // Clear stored auth data
-      await AsyncStorage.removeItem('user');
-      await AsyncStorage.removeItem('token');
-      
-      // Update state
+      await AsyncStorage.multiRemove(['user', 'token']);
       setUser(null);
-      
-      // Navigate to login
       router.push('/welcome');
     } catch (error) {
       console.error("Logout error:", error);

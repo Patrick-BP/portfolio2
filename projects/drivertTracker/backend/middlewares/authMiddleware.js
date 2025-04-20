@@ -15,23 +15,23 @@ module.exports = async (req, res, next) => {
     
     // Check if token is valid
     if (!verified) {
-      return res.status(401).json({ msg: 'Token is not valid' });
+      return res.status(401).json({ msg: 'Authorization denied' });
     }
     // Check if user exists
     if (!verified._id) {
-      return res.status(401).json({ msg: 'Token is not valid' });
+      return res.status(401).json({ msg: 'Authorization denied' });
     }
     // Check if user exists in database
     // Find user by id
     const user = await User.findById(verified._id);
     if (!user) { 
-      return res.status(401).json({ msg: 'Token is not valid' });
+      return res.status(401).json({ msg: 'Authorization denied' });
     }
      // Add user info to request object
      req.user = { id: verified._id };
 
     next();
   } catch (err) {
-    res.status(400).json({ msg: 'Token is not valid' , error: err.message});
+    res.status(400).json({ msg: 'Unauthorized' , error: err.message});
   }
 };

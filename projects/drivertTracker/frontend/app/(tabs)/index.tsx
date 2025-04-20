@@ -33,7 +33,7 @@ type Expense = {
 };
 
 export default function Index() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
   const { isDarkMode } = useTheme();
 
@@ -42,7 +42,7 @@ export default function Index() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
-
+ 
   const fetchExpenses = async () => {
     try {
       const response = await useRequest({
@@ -51,7 +51,10 @@ export default function Index() {
         path: "expenses",
       });
 
-      if (response.error) {
+      if (response.error === "Unauthorized") {
+        Alert.alert("Error", "Unauthorized access. Please log in again.",[ { text: "OK", onPress: () => logout() } ]);
+        
+      } else if (response.error) {
         Alert.alert("Error", response.error);
       } else if (response.data) {
         const formattedExpenses = response.data.map((expense: any) => ({
@@ -179,7 +182,14 @@ export default function Index() {
             >
               Recent Expenses
             </Text>
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/(tabs)/history");
+              }}
+              className="flex-row items-center" 
+            >
             <Text className="text-sm text-blue-600">View All</Text>
+            </TouchableOpacity>
           </View>
           <View style={{ maxHeight: 320 }}>
   <FlatList
@@ -214,43 +224,7 @@ export default function Index() {
         <Plus size={35} stroke="white" />
       </TouchableOpacity>
 
-      {/* Edit Expense Modal */}
-      {isModalVisible && selectedExpense && (
-        <EditExpenseModal
-          visible={isModalVisible}
-          onClose={() => setModalVisible(false)}
-          expense={selectedExpense}
-          onSave={handleSave}
-        />
-      )}
 
-      {/* Delete Confirmation Modal */}
-      {isConfirmVisible && expenseToDelete && (
-        <View className="absolute inset-0 justify-center items-center bg-black/50 z-50">
-          <View className="bg-white p-6 rounded-xl w-11/12">
-            <Text className="text-lg font-semibold mb-3">
-              Delete "{expenseToDelete.description}"?
-            </Text>
-            <Text className="text-gray-600 mb-4">
-              Are you sure you want to delete this expense? This action cannot be undone.
-            </Text>
-            <View className="flex-row justify-between">
-              <TouchableOpacity
-                className="px-4 py-2 bg-gray-200 rounded-md"
-                onPress={() => setConfirmVisible(false)}
-              >
-                <Text className="text-gray-800 font-semibold">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="px-4 py-2 bg-red-600 rounded-md"
-                onPress={confirmDelete}
-              >
-                <Text className="text-white font-semibold">Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
     </View>
   );
 }

@@ -10,14 +10,19 @@ import {
   Alert,
   RefreshControl,
   Modal,
+  Linking
+  
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { FilterIcon, SearchIcon, RefreshCw, X, Calendar, Tag, DollarSign } from 'lucide-react-native';
+import { FilterIcon, SearchIcon, RefreshCw, X, Calendar, Tag, DollarSign, Info, Download } from 'lucide-react-native';
 import ExpenseCard from '@/app/ui/ExpenseCard';
 import EditExpenseModal from '@/app/ui/EditExpenseModal';
 import { useTheme } from '@/app/contexts/ThemeContext';
 import useRequest from '@/app/services/useRequest';
 import { useFocusEffect } from '@react-navigation/native';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const History = () => {
   const { isDarkMode } = useTheme();
@@ -26,6 +31,7 @@ const History = () => {
   const isMountedRef = useRef(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { logout } = useAuth();
 
   type Expense = {
     _id: string;
@@ -34,6 +40,7 @@ const History = () => {
     description: string;
     amount: number;
     createdAt?: string; // Add createdAt field for sorting
+    receipt?: string | null; // Receipt URL
   };
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -68,8 +75,11 @@ const History = () => {
 
       if (!isMountedRef.current) return;
 
-      if (response.error) {
-        Alert.alert('Error', response.error);
+     if (response.error === "Unauthorized") {
+             Alert.alert("Error", "Unauthorized access. Please log in again.",[ { text: "OK", onPress: () => logout() } ]);
+             
+           } else if (response.error) {
+             Alert.alert("Error", response.error);
       } else if (response.data) {
         // Transform dates from strings to Date objects
         const formattedExpenses = response.data.map((expense: any) => ({
@@ -156,7 +166,9 @@ const History = () => {
   };
 
   const handleEdit = (id: string) => {
+   
     const expense = expenses.find((e) => e._id === id);
+    
     if (expense) {
       setSelectedExpense(expense);
       setModalVisible(true);
@@ -487,89 +499,176 @@ const History = () => {
       />
 
       {/* Expense Details Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isDetailsModalVisible}
-        onRequestClose={() => setDetailsModalVisible(false)}
-      >
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className={`w-11/12 p-6 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className={`text-xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                Expense Details
-              </Text>
-              <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
-                <X size={24} stroke={isDarkMode ? '#9ca3af' : '#4b5563'} />
-              </TouchableOpacity>
+
+
+<Modal
+  animationType="fade"
+  transparent
+  visible={isDetailsModalVisible}
+  onRequestClose={() => setDetailsModalVisible(false)}
+>
+  <View className="flex-1 justify-center items-center bg-black/80 px-4">
+    <View
+      className={`w-full max-w-md rounded-2xl p-6 ${
+        isDarkMode ? 'bg-gray-900' : 'bg-white'
+      }`}
+      style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        elevation: 10,
+      }}
+    >
+      {/* Header */}
+      <View className="flex-row justify-between items-center mb-6">
+        <Text className={`text-2xl font-extrabold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          Expense Details
+        </Text>
+        <TouchableOpacity
+          onPress={() => setDetailsModalVisible(false)}
+          className="p-2 rounded-full bg-black/10 dark:bg-white/10"
+        >
+          <X size={24} stroke={isDarkMode ? '#d1d5db' : '#4b5563'} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
+      {expenseDetails && (
+        <View className="space-y-4">
+          {/* Date */}
+          <View className="flex-row items-center pb-3 border-b border-gray-300/30 dark:border-gray-700">
+            <View className="p-2 bg-gray-200 dark:bg-gray-700 rounded-xl mr-3">
+              <Calendar size={20} stroke={isDarkMode ? '#f3f4f6' : '#4b5563'} />
             </View>
-            
-            {expenseDetails && (
-              <View className="space-y-4">
-                <View className="flex-row items-center">
-                  <Calendar size={20} stroke={isDarkMode ? '#9ca3af' : '#4b5563'} className="mr-2" />
-                  <Text className={`text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Date: {expenseDetails.date.toDateString()}
-                  </Text>
-                </View>
-                
-                <View className="flex-row items-center">
-                  <Tag size={20} stroke={isDarkMode ? '#9ca3af' : '#4b5563'} className="mr-2" />
-                  <Text className={`text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Category: {expenseDetails.category}
-                  </Text>
-                </View>
-                
-                <View className="flex-row items-start">
-                  <Text className={`text-base mr-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Description:
-                  </Text>
-                  <Text className={`text-base flex-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {expenseDetails.description}
-                  </Text>
-                </View>
-                
-                <View className="flex-row items-center">
-                  <DollarSign size={20} stroke={isDarkMode ? '#9ca3af' : '#4b5563'} className="mr-2" />
-                  <Text className={`text-base font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Amount: {formatCurrency(expenseDetails.amount)}
-                  </Text>
-                </View>
-              </View>
-            )}
-            
-            <View className="flex-row justify-between mt-6">
-              <TouchableOpacity
-                onPress={() => {
-                  setDetailsModalVisible(false);
-                  if (expenseDetails) handleEdit(expenseDetails._id);
-                }}
-                className="px-4 py-2 bg-blue-600 rounded-md"
-              >
-                <Text className="text-white font-semibold">Edit</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={() => {
-                  setDetailsModalVisible(false);
-                  if (expenseDetails) handleDelete(expenseDetails._id);
-                }}
-                className="px-4 py-2 bg-red-600 rounded-md"
-              >
-                <Text className="text-white font-semibold">Delete</Text>
-              </TouchableOpacity>
-            </View>
+            <Text className={`text-base font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              {expenseDetails.date.toDateString()}
+            </Text>
           </View>
+
+          {/* Category */}
+          <View className="flex-row items-center pb-3 border-b border-gray-300/30 dark:border-gray-700">
+            <View className="p-2 bg-gray-200 dark:bg-gray-700 rounded-xl mr-3">
+              <Tag size={20} stroke={isDarkMode ? '#f3f4f6' : '#4b5563'} />
+            </View>
+            <Text className={`text-base font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              {expenseDetails.category}
+            </Text>
+          </View>
+
+          {/* Description */}
+          <View className="flex-row items-center pb-3 border-b border-gray-300/30 dark:border-gray-700">
+            <View className="p-2 bg-purple-200 dark:bg-purple-800 rounded-xl mr-3">
+              <Info size={20} stroke={isDarkMode ? '#ddd6fe' : '#6b21a8'} />
+            </View>
+            <Text className={`text-base font-medium ${isDarkMode ? 'text-purple-300' : 'text-purple-800'}`}>
+              {expenseDetails.description}
+            </Text>
+          </View>
+
+          {/* Amount */}
+          <View className="flex-row items-center pt-1">
+            <View className="p-2 bg-green-100 dark:bg-green-900/40 rounded-xl mr-3">
+              <DollarSign size={20} stroke={isDarkMode ? '#a7f3d0' : '#065f46'} />
+            </View>
+            <Text className={`text-lg font-bold ${isDarkMode ? 'text-green-300' : 'text-green-800'}`}>
+              {formatCurrency(expenseDetails.amount)}
+            </Text>
+          </View>
+
+          {/* Receipt Download */}
+          {expenseDetails.receipt && (
+  <TouchableOpacity
+    className="flex-row items-center mt-6 self-start px-4 py-2 rounded-md bg-indigo-600"
+    onPress={async () => {
+      try {
+        const fileUrl = `http://192.168.0.233:3000${expenseDetails.receipt}`;
+        const fileName = expenseDetails.receipt?.split('/').pop() || `receipt_${Date.now()}.jpg`;
+        const downloadPath = `${FileSystem.documentDirectory}${fileName}`;
+
+        // Step 1: Request media library permission
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert("Permission Denied", "Storage access is required to save the receipt.");
+          return;
+        }
+
+        // Step 2: Download to temporary app directory
+        const downloadResult = await FileSystem.downloadAsync(fileUrl, downloadPath);
+
+        // Step 3: Save to downloads folder
+        const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
+        const album = await MediaLibrary.getAlbumAsync("Download");
+        if (album) {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+        } else {
+          await MediaLibrary.createAlbumAsync("Download", asset, false);
+        }
+
+        Alert.alert("Download Complete", "Receipt saved to Downloads folder.");
+      } catch (error) {
+        console.error("Download error:", error);
+        Alert.alert("Download Failed", "Something went wrong.");
+      }
+    }}
+  >
+    <Download size={18} color="white" className="mr-2" />
+    <Text className="text-white font-medium ml-3">Download Receipt</Text>
+  </TouchableOpacity>
+)}
+
+
         </View>
-      </Modal>
+      )}
+
+      {/* Action Buttons */}
+      <View className="flex-row justify-end space-x-4 gap-4 mt-8">
+        <TouchableOpacity
+          onPress={() => {
+            setDetailsModalVisible(false);
+            if (expenseDetails) handleEdit(expenseDetails._id);
+          }}
+          className="px-5 py-2 rounded-md bg-blue-600"
+        >
+          <Text className="text-white font-semibold">Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            setDetailsModalVisible(false);
+            if (expenseDetails) handleDelete(expenseDetails._id);
+          }}
+          className="px-5 py-2 rounded-md bg-red-600"
+        >
+          <Text className="text-white font-semibold">Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       {/* Edit Modal */}
       {isModalVisible && selectedExpense && (
         <EditExpenseModal
           visible={isModalVisible}
           onClose={() => setModalVisible(false)}
-          expense={{ ...selectedExpense, date: selectedExpense.date.toISOString() }}
-          onSave={(updatedExpense) =>
+          expenses={{ ...selectedExpense, date: selectedExpense.date.toISOString() }}
+          onSaved={(updatedExpense) =>
             handleSave({ ...updatedExpense, date: new Date(updatedExpense.date) })
           }
         />

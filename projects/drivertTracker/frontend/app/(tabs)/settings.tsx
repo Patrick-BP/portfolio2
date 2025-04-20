@@ -71,7 +71,13 @@ const Settings = () => {
         route: 'me',
       });
 
-      if (result.data && !result.error) {
+      if (result.error === "Unauthorized") {
+              Alert.alert("Error", "Unauthorized access. Please log in again.",[ { text: "OK", onPress: () => logout() } ]);
+              
+            } else if (result.error) {
+              Alert.alert("Error", result.error);}
+
+      else if (result.data && !result.error) {
         setProfile({
           name: result.data.name || '',
           email: result.data.email || '',
