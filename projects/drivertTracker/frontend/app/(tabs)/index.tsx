@@ -23,14 +23,7 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import useRequest from "@/app/services/useRequest";
 import { useFocusEffect } from "@react-navigation/native";
 
-type Expense = {
-  _id: string;
-  date: string;
-  category: string;
-  description: string;
-  amount: number;
-  createdAt?: Date;
-};
+
 
 export default function Index() {
   const { user, loading, logout } = useAuth();
@@ -42,6 +35,7 @@ export default function Index() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
+  const [reports, setReports] = useState<MonthlyReport[]>([]);
  
   const fetchExpenses = async () => {
     try {
@@ -76,11 +70,35 @@ export default function Index() {
     }
   };
 
+  const fetchMonthlyReports = async () => {
+    try {
+      const response = await useRequest({
+        action: "get",
+        path: "reports",
+        route: "monthly",
+      });
+
+      if (response.error === "Unauthorized") {
+        Alert.alert("Error", "Unauthorized access. Please log in again.",[ { text: "OK", onPress: () => logout() } ]);
+        
+      } else if (response.error) {
+        Alert.alert("Error", response.error);
+      } else if (response.data) {
+        setReports(response.data);
+        
+console.log(response.data);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to fetch reports.");
+    }
+  };
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/welcome");
     } else {
       fetchExpenses();
+      fetchMonthlyReports();
     }
   }, [user, loading]);
 
@@ -148,21 +166,21 @@ export default function Index() {
         <View className="flex-row flex-wrap justify-between w-full">
           <StatCard
             title="This Month"
-            value="$345.82"
+            value= {`$ ${reports[0]?.totalExpenses || 0}`}
             icon={<CalendarIcon size={20} stroke={isDarkMode ? "#fff" : "#2563eb"} />}
             trend={{ value: 12, isPositive: false }}
           />
           <StatCard
             title="Miles Driven"
-            value={`${mileageStats.thisMonth}`}
+            value={`${reports[0]?.totalMileage || 0}`}
             icon={<CarIcon size={20} stroke={isDarkMode ? "#fff" : "#2563eb"} />}
             subtitle="This Month"
           />
           <StatCard
             title="Business Miles"
-            value={mileageStats.businessMiles.toLocaleString()}
+            value={(reports[0]?.totalMileage * 90 )/100}
             icon={<CarIcon size={20} stroke={isDarkMode ? "#fff" : "#2563eb"} />}
-            subtitle={`$${(mileageStats.businessMiles * mileageStats.mileageRate).toFixed(2)} Deduction`}
+            subtitle={`$${(reports[0]?.totalMileage * mileageStats.mileageRate).toFixed(2)} Deduction`}
           />
           <StatCard
             title="Per Mile"

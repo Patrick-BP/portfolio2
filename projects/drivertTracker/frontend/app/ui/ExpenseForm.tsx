@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { Upload } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+import useRequest from '../services/useRequest';
 
 interface ExpenseFormProps {
   onSubmit: (expense: {
@@ -59,6 +60,21 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
   const [gallons, setGallons] = useState(initialValues?.gallons?.toString() || '');
   const [receipt, setReceipt] = useState<any>(null);
   const [receiptImg, setReceiptImg] = useState<any>()
+  
+
+  useEffect(() => {
+    useRequest({
+      action: 'get',
+      path: 'expenses',
+      route: 'previous-mileage',
+    }).then((result) => {
+      if (result.data && !result.error) {
+        console.log(result.data)
+        setPreviousOdometer(result.data?.toString() || '');
+      }
+    })
+    
+  }, []);
 
   const tripDistance =
     odometer && previousOdometer
@@ -191,9 +207,10 @@ const uploadReceiptImage = async (result: any) => {
             <TextInput
               className={inputStyle}
               keyboardType="numeric"
-              value={previousOdometer}
+              value={previousOdometer?.toString() || ''}
               onChangeText={setPreviousOdometer}
               placeholder="Previous mileage"
+              editable={false}
             />
           </View>
           <View>

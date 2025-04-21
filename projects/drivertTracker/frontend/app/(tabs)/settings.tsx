@@ -34,7 +34,7 @@ const Settings = () => {
   const { logout, user} = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
 
-  const [mileageRate, setMileageRate] = useState('0.655');
+  const [mileageRate, setMileageRate] = useState('');
   const [useActualExpenses, setUseActualExpenses] = useState(false);
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -45,16 +45,19 @@ const Settings = () => {
     year: 0,
     license: '',
     id: '',
+    mileageRate: '',
   });
 
   const [profile, setProfile] = useState({
     name: '',
     email: '',
+    
   });
 
   const [modalVehicleVisible, setModalVehicleVisible] = useState(false);
   const [modalProfileVisible, setModalProfileVisible] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [saveMileageRateVisible, setSaveMileageRateVisible] = useState(false);
 
   // Fetch user and vehicle data
   useEffect(() => {
@@ -114,6 +117,7 @@ const Settings = () => {
           year: result.data.year || 0,
           license: result.data.license || '',
           id: result.data._id || '',
+          mileageRate: result.data.mileageRate || 0,
         });
       } else if (result.error) {
         console.log('No vehicle data found or error:', result.error);
@@ -293,6 +297,33 @@ const Settings = () => {
     );
   }
 
+  const handleSaveMileage = async () => {
+    setLoading(true);
+    
+    
+    try {
+      const result = await useRequest({
+        action: 'patch',
+        path: 'vehicle',
+        payload: {
+          mileageRate: Number(vehicle.mileageRate),
+        },
+      });
+      
+      if (!result.error) {
+        Alert.alert('Success', 'Mileage rate updated successfully');
+        setSaveMileageRateVisible(false);
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update mileage rate');
+      }
+    } catch (error) {
+      console.error('Error updating mileage rate:', error);
+      Alert.alert('Error', 'Failed to update mileage rate');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ScrollView className={`p-4 ${isDarkMode ? 'bg-[#111827]' : 'bg-blue-50'}`}>
       {/* <Text className={`text-[24px] font-bold mb-4 mt-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-800'}`}>
@@ -465,12 +496,19 @@ const Settings = () => {
         <View className="mb-3">
           <Text className={`text-sm mb-1 ${textClass}`}>Standard Mileage Rate ($/mile)</Text>
           <TextInput
-            value={mileageRate}
-            onChangeText={setMileageRate}
+            value={vehicle?.mileageRate.toString()}
+            onChangeText={text => {
+              setVehicle({ ...vehicle, mileageRate: text});
+              setSaveMileageRateVisible(true);
+            }}
             keyboardType="decimal-pad"
             className={`w-full px-3 py-2 border border-gray-300 rounded-md ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}
           />
-          <Text className="text-xs text-slate-400 mt-1">Current IRS rate for 2023: $0.655/mile</Text>
+          {saveMileageRateVisible && <TouchableOpacity onPress={() => handleSaveMileage()} 
+          className="absolute left-20 bottom-6 z-0  ">
+            {loading ? <ActivityIndicator size="small" color="white" /> : <Text className="text-blue-600 text-xs font-semibold border border-gray-300 rounded-md bg-gray-300 px-2 py-1">Save</Text>}
+          </TouchableOpacity>}
+          <Text className="text-xs text-slate-400 mt-1">Current IRS rate for {new Date().getFullYear()}: ${vehicle?.mileageRate}/mile</Text>
         </View>
         <View className="flex-row items-center justify-between">
           <Text className={`text-sm ${textClass}`}>Use actual expenses</Text>

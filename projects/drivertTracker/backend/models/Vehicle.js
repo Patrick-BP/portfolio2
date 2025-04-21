@@ -4,7 +4,8 @@ const vehicleSchema = new mongoose.Schema({
     model: String,
     make: String,
     year: Number,
-    license: String
+    license: String,
+    mileageRate: { type: Number, default: 0.57 }
   }, { timestamps: true , versionKey: false });
   
   module.exports = mongoose.model('Vehicle', vehicleSchema);

@@ -5,8 +5,8 @@ import { BASE_URL } from '@env';
 export type RequestType = {
     action: 'post' | 'get' | 'patch' |'delete'; 
     payload?: object;
-    path: 'auth' | 'users' | 'expenses' | 'vehicle';
-    route?: 'register' | 'login' | 'category-breakdown' | 'fuel-efficiency' | 'import-csv' | 'export-csv' | 'me';
+    path: 'auth' | 'users' | 'expenses' | 'vehicle' | 'reports';
+    route?: 'register' | 'login' | 'monthly' | 'yearly' | 'quarterly' | 'categories' | 'me'|'download' |'mileage-details' | 'previous-mileage';
     id?: string;
 }
 

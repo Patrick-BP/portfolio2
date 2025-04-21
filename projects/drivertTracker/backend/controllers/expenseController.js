@@ -1,7 +1,7 @@
 const Expense = require('../models/Expense');
+const Vehicle = require('../models/Vehicle');
 
 exports.addExpense = async (req, res) => {
-  console.log("📥 req.file:", req.file);
   try {
     const {
       category,
@@ -61,4 +61,12 @@ exports.updateExpense = async (req, res) => {
 exports.deleteExpense = async (req, res) => {
   await Expense.findOneAndDelete({ _id: req.params.id, user: req.user.id });
   res.json({ msg: 'Deleted' });
+};
+exports.getVehiclepreviousMileage = async (req, res) => {
+  const vehicle = await Vehicle.findOne({ user: req.user.id });
+  if (!vehicle) {
+    return res.status(404).json({ msg: 'Vehicle not found' });
+  }
+  const previousMileage = (await Expense.findOne({ user: req.user.id }).sort({ date: -1 })).current_mileage;
+  res.json(previousMileage);
 };

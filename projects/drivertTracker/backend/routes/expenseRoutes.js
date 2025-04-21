@@ -8,5 +8,6 @@ router.post('/', auth, upload.single('receipt'), controller.addExpense);
 router.get('/', auth, controller.getExpenses);
 router.patch('/:id', auth, upload.single('receipt'), controller.updateExpense);
 router.delete('/:id', auth, controller.deleteExpense);
+router.get('/previous-mileage', auth, controller.getVehiclepreviousMileage);
 
 module.exports = router;

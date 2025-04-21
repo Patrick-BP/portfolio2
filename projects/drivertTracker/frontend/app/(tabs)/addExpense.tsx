@@ -14,6 +14,12 @@ const Add = () => {
 
 
   const handleSubmit = async (expense: any) => {
+    // validate previous odometer is greater than current odometer
+    if (expense.previous_mileage && expense.current_mileage && expense.previous_mileage >= expense.current_mileage) {
+      Alert.alert('Error', 'Previous mileage must be less than current mileage')
+      return
+    }
+     
 
     try {
       setIsLoading(true)
