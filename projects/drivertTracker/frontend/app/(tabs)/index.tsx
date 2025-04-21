@@ -25,7 +25,7 @@ import { useFocusEffect } from "@react-navigation/native";
 
 type Expense = {
   _id: string;
-  date: Date;
+  date: string;
   category: string;
   description: string;
   amount: number;
@@ -61,8 +61,8 @@ export default function Index() {
         }));
 
         const sortedExpenses = formattedExpenses.sort((a: Expense, b: Expense) => {
-          const dateA = a.createdAt?.getTime() ?? a.date.getTime();
-          const dateB = b.createdAt?.getTime() ?? b.date.getTime();
+          const dateA = a.createdAt?.getTime() ?? new Date(a.date).getTime();
+          const dateB = b.createdAt?.getTime() ?? new Date(b.date).getTime();
           return dateB - dateA;
         });
 
@@ -188,7 +188,7 @@ export default function Index() {
     renderItem={({ item }) => (
       <ExpenseCard
         _id={item._id}
-        date={item.date.toLocaleDateString()}
+        date={item.date}
         category={item.category}
         description={item.description}
         amount={item.amount}
@@ -219,8 +219,8 @@ export default function Index() {
         <EditExpenseModal
           visible={isModalVisible}
           onClose={() => setModalVisible(false)}
-          expense={selectedExpense}
-          onSave={handleSave}
+          expenses={selectedExpense}
+          onSaved={handleSave}
         />
       )}
 
