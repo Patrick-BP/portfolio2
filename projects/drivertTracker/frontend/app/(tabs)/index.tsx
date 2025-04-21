@@ -25,7 +25,7 @@ import { useFocusEffect } from "@react-navigation/native";
 
 type Expense = {
   _id: string;
-  date: Date;
+  date: string;
   category: string;
   description: string;
   amount: number;
@@ -64,8 +64,8 @@ export default function Index() {
         }));
 
         const sortedExpenses = formattedExpenses.sort((a: Expense, b: Expense) => {
-          const dateA = a.createdAt?.getTime() ?? a.date.getTime();
-          const dateB = b.createdAt?.getTime() ?? b.date.getTime();
+          const dateA = a.createdAt?.getTime() ?? new Date(a.date).getTime();
+          const dateB = b.createdAt?.getTime() ?? new Date(b.date).getTime();
           return dateB - dateA;
         });
 
@@ -198,7 +198,7 @@ export default function Index() {
     renderItem={({ item }) => (
       <ExpenseCard
         _id={item._id}
-        date={item.date.toLocaleDateString()}
+        date={item.date}
         category={item.category}
         description={item.description}
         amount={item.amount}
@@ -224,7 +224,43 @@ export default function Index() {
         <Plus size={35} stroke="white" />
       </TouchableOpacity>
 
+      {/* Edit Expense Modal */}
+      {isModalVisible && selectedExpense && (
+        <EditExpenseModal
+          visible={isModalVisible}
+          onClose={() => setModalVisible(false)}
+          expenses={selectedExpense}
+          onSaved={handleSave}
+        />
+      )}
 
+      {/* Delete Confirmation Modal */}
+      {isConfirmVisible && expenseToDelete && (
+        <View className="absolute inset-0 justify-center items-center bg-black/50 z-50">
+          <View className="bg-white p-6 rounded-xl w-11/12">
+            <Text className="text-lg font-semibold mb-3">
+              Delete "{expenseToDelete.description}"?
+            </Text>
+            <Text className="text-gray-600 mb-4">
+              Are you sure you want to delete this expense? This action cannot be undone.
+            </Text>
+            <View className="flex-row justify-between">
+              <TouchableOpacity
+                className="px-4 py-2 bg-gray-200 rounded-md"
+                onPress={() => setConfirmVisible(false)}
+              >
+                <Text className="text-gray-800 font-semibold">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="px-4 py-2 bg-red-600 rounded-md"
+                onPress={confirmDelete}
+              >
+                <Text className="text-white font-semibold">Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
