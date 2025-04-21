@@ -1,47 +1,77 @@
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
 
-const generatePDF = (expenses, fuelEfficiency, categoryBreakdown, range) => {
+// Helper to convert stream to buffer
+function streamToBuffer(stream) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on('data', chunk => chunks.push(chunk));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
+}
+
+const generatePDF = async ({ expenses, summary, monthly, quarterly, yearly, categories, fuelStats, mileageDetails }) => {
   const doc = new PDFDocument();
 
-  const filePath = `./reports/report-${Date.now()}.pdf`;
-  doc.pipe(fs.createWriteStream(filePath));
-
-  // Title
+  // Header
   doc.fontSize(20).text('Rideshare Expenses Report', { align: 'center' });
-
-  // Date Range
-  doc.fontSize(12).text(`Report Range: ${range}`, { align: 'center' });
-  doc.moveDown(2);
-
-  // Expenses Table
-  doc.fontSize(16).text('Expenses Summary');
   doc.moveDown(1);
 
-  expenses.forEach(exp => {
-    doc.text(`Category: ${exp.category}`);
-    doc.text(`Date: ${exp.date}`);
-    doc.text(`Amount: $${exp.amount}`);
-    doc.text(`Description: ${exp.description}`);
-    doc.text('---');
+  // Totals Summary
+  doc.fontSize(14).text(`Total Expenses: $${summary.totalExpenses.toFixed(2)}`);
+  doc.text(`Total Mileage: ${summary.totalMiles} miles`);
+  doc.text(`Total Fuel: ${summary.totalFuel} gallons`);
+  doc.moveDown(1);
+
+  // Monthly Summary
+  doc.fontSize(16).text('Monthly Summary', { underline: true });
+  monthly.forEach(item => {
+    doc.fontSize(12).text(`${item._id} - Mileage: ${item.totalMileage}, Fuel: ${item.totalFuel} gal, Expenses: $${item.totalExpenses}`);
   });
+  doc.moveDown(1);
 
-  doc.moveDown(2);
+  // Quarterly Summary
+  doc.fontSize(16).text('Quarterly Summary', { underline: true });
+  quarterly.forEach(item => {
+    doc.fontSize(12).text(`${item._id} - Mileage: ${item.totalMileage}, Fuel: ${item.totalFuel} gal, Expenses: $${item.totalExpenses}`);
+  });
+  doc.moveDown(1);
 
-  // Fuel Efficiency
-  doc.text(`Fuel Efficiency: ${fuelEfficiency.toFixed(2)} miles per gallon`);
+  // Yearly Summary
+  doc.fontSize(16).text('Yearly Summary', { underline: true });
+  yearly.forEach(item => {
+    doc.fontSize(12).text(`${item._id} - Mileage: ${item.totalMileage}, Fuel: ${item.totalFuel} gal, Expenses: $${item.totalExpenses}`);
+  });
   doc.moveDown(1);
 
   // Category Breakdown
-  doc.text('Category Breakdown:');
-  categoryBreakdown.forEach(item => {
-    doc.text(`${item._id}: $${item.total}`);
+  doc.fontSize(16).text('Top Categories', { underline: true });
+  categories.forEach(cat => {
+    doc.fontSize(12).text(`${cat._id}: $${cat.total.toFixed(2)} (${cat.count} entries)`);
+  });
+  doc.moveDown(1);
+
+  // Fuel Efficiency
+  doc.fontSize(16).text('Fuel Efficiency', { underline: true });
+  const eff = fuelStats?.avgEfficiency?.toFixed(2) || 'N/A';
+  doc.fontSize(12).text(`Average MPG: ${eff}`);
+  doc.moveDown(1);
+
+  // Mileage Details
+  doc.fontSize(16).text('Mileage Details', { underline: true });
+  mileageDetails.forEach(m => {
+    doc.fontSize(12).text(`${new Date(m.date).toLocaleDateString()}: ${m.mileageDelta} miles`);
+  });
+  doc.moveDown(1);
+
+  // Expense List
+  doc.fontSize(16).text('All Expenses', { underline: true });
+  expenses.forEach(exp => {
+    doc.fontSize(12).text(`• ${exp.category} | $${exp.amount} | ${new Date(exp.date).toLocaleDateString()} - ${exp.description}`);
   });
 
-  // Finalize PDF
   doc.end();
-
-  return filePath;  // Return the path of the generated PDF
+  return await streamToBuffer(doc);
 };
 
-module.exports = generatePDF;
+module.exports = { generatePDF };

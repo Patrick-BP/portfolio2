@@ -1,25 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middlewares/authMiddleware');
 const reportController = require('../controllers/reportController');
-const multer = require('multer');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-// Set up multer for file upload
-const upload = multer({ dest: 'uploads/csv/' });
+// All routes require authentication
+router.use(authMiddleware);
 
-// Generate report (PDF)
-router.post('/generate/:range', auth, (req, res) => reportController.generateReport(req, res, req.params.range));
+// 📄 Export PDF Report
+router.get('/download', reportController.generateReport);
 
-// Category breakdown report
-router.get('/category-breakdown', auth, reportController.getCategoryBreakdown);
-
-// Fuel efficiency report
-router.get('/fuel-efficiency', auth, reportController.getFuelEfficiency);
-
-// CSV import (for uploading CSV file)
-router.post('/import-csv', auth, upload.single('csv_file'), reportController.importCSV);
-
-// CSV export (for downloading CSV file)
-router.get('/export-csv', auth, reportController.exportCSV);
+// 📊 Web View & JSON Reports
+router.get('/monthly', reportController.getMonthlySummary);
+router.get('/quarterly', reportController.getQuarterlySummary);
+router.get('/yearly', reportController.getYearlySummary);
+router.get('/categories', reportController.getTopCategories);
+router.get('/efficiency', reportController.getFuelEfficiencyStats);
+router.get('/mileage-details', reportController.getMileageDetails);
 
 module.exports = router;

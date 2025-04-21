@@ -82,6 +82,7 @@ const History = () => {
            } else if (response.error) {
              Alert.alert("Error", response.error);
       } else if (response.data) {
+        
         // Transform dates from strings to Date objects
         const formattedExpenses = response.data.map((expense: any) => ({
           ...expense,
@@ -499,8 +500,7 @@ const History = () => {
         }
       />
 
-      {/* Expense Details Modal */}
-
+{/* Expense Details Modal */}
 
 <Modal
   animationType="fade"
@@ -583,10 +583,10 @@ const History = () => {
     className="flex-row items-center mt-6 self-start px-4 py-2 rounded-md bg-indigo-600"
     onPress={async () => {
       try {
-        const fileUrl = `${BASE_URL}${expenseDetails.receipt}`;
+        const fileUrl = `${BASE_URL.slice(0, -4)}${expenseDetails.receipt?.slice(1)}`;
         const fileName = expenseDetails.receipt?.split('/').pop() || `receipt_${Date.now()}.jpg`;
         const downloadPath = `${FileSystem.documentDirectory}${fileName}`;
-
+        
         // Step 1: Request media library permission
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status !== 'granted') {

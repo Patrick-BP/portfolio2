@@ -42,7 +42,7 @@ const Settings = () => {
   const [vehicle, setVehicle] = useState({
     make: '',
     model: '',
-    year: '',
+    year: 0,
     license: '',
     id: '',
   });
@@ -60,7 +60,7 @@ const Settings = () => {
   useEffect(() => {
     fetchUserData();
     fetchVehicleData();
-  }, []);
+  }, [modalVehicleVisible, modalProfileVisible]);
 
   const fetchUserData = async () => {
     setLoading(true);
@@ -82,7 +82,7 @@ const Settings = () => {
           name: result.data.name || '',
           email: result.data.email || '',
         });
-        setProfileImage(`${BASE_URL.slice(0, -6)}${result.data.profile_picture.slice(1)}`)
+        setProfileImage(`${BASE_URL.slice(0, -4)}${result.data.profile_picture.slice(1)}`)
         
         if (result.data.profileImageUrl) {
           setProfileImage(result.data.profileImageUrl);
@@ -111,9 +111,9 @@ const Settings = () => {
         setVehicle({
           make: result.data.make || '',
           model: result.data.model || '',
-          year: result.data.year || '',
+          year: result.data.year || 0,
           license: result.data.license || '',
-          id: result.data.id || '',
+          id: result.data._id || '',
         });
       } else if (result.error) {
         console.log('No vehicle data found or error:', result.error);
@@ -165,8 +165,6 @@ const Settings = () => {
       const filename = asset.fileName || `profile_${Date.now()}.jpg`;
       const extension = filename.split('.').pop()?.toLowerCase();
       const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
-
-      
       
       const fileToUpload = {
         uri: localUri.startsWith('file://') ? localUri : `file://${localUri}`,
@@ -174,63 +172,31 @@ const Settings = () => {
         type: mimeType,
       };
       
-     
-   
-      
       // FormData instance
       const formData = new FormData();
       // @ts-ignore
       formData.append('profile_picture', fileToUpload);
-      // Get the token for authorization
-      const token = await AsyncStorage.getItem('token');
       
-      
-      // Make the request
-      // const response = await fetch(`${BASE_URL}users/me`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Accept': 'application/json',
-      //     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-      //     // Note: Don't set Content-Type when sending FormData
-      //   },
-      //   body: formData,
-      // });
-
       const response = await useRequest({
         action: 'patch',
         path: 'users',
         route: 'me',
         payload: formData,
       });
+
+     
       // Check if response is OK
       if (!response.error) {
-        // Try to parse as JSON
-        try {
-          if (response.data.profileImageUrl) {
-            setProfileImage(response.data.profileImageUrl);
+      
+        if (response.data.profile_picture) {
+            setProfileImage(`${BASE_URL.slice(0, -4)}${response.data.profile_picture.slice(1)}`);
+            Alert.alert('Success', 'Profile image updated successfully');
           }
-          Alert.alert('Success', 'Profile image updated successfully');
-        } catch (parseError) {
-          // If it's not JSON but the response was OK, still consider it a success
-          console.log('Response not in JSON format but upload succeeded');
-          Alert.alert('Success', 'Profile image updated successfully');
-          // Refresh user data to get the updated image URL
-          await fetchUserData();
-        }
+          console.log('Response:', profileImage);
+
       } else {
         console.error('Error response:', response.error);
         
-        // Try to get error details
-        let errorMsg = 'Failed to upload profile image';
-        try {
-          const errorData = await response.error;
-          errorMsg = errorData || errorMsg;
-        } catch (parseError) {
-          // If we can't parse the error as JSON, use a generic message
-          console.log('Error response not in JSON format');
-        }
-        
-        Alert.alert('Error', errorMsg);
       }
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -440,8 +406,8 @@ const Settings = () => {
             </Text>
             <TextInput
               placeholder="Year"
-              value={vehicle.year}
-              onChangeText={(text) => setVehicle({ ...vehicle, year: text })}
+              value={vehicle.year.toString()}
+              onChangeText={(text) => setVehicle({ ...vehicle, year: Number(text) })}
               keyboardType="numeric"
               className={`border rounded-md p-2 mb-2 border-gray-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}
               placeholderTextColor={isDarkMode ? '#9ca3af' : '#6b7280'}
