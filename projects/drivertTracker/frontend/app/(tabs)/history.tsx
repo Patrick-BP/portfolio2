@@ -23,6 +23,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { BASE_URL } from '@env';
 
 const History = () => {
   const { isDarkMode } = useTheme();
@@ -582,7 +583,7 @@ const History = () => {
     className="flex-row items-center mt-6 self-start px-4 py-2 rounded-md bg-indigo-600"
     onPress={async () => {
       try {
-        const fileUrl = `http://192.168.0.233:3000${expenseDetails.receipt}`;
+        const fileUrl = `${BASE_URL}${expenseDetails.receipt}`;
         const fileName = expenseDetails.receipt?.split('/').pop() || `receipt_${Date.now()}.jpg`;
         const downloadPath = `${FileSystem.documentDirectory}${fileName}`;
 

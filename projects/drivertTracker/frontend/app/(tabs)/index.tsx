@@ -198,7 +198,7 @@ export default function Index() {
     renderItem={({ item }) => (
       <ExpenseCard
         _id={item._id}
-        date={item.date}
+        date={new Date(item.date).toLocaleDateString()}
         category={item.category}
         description={item.description}
         amount={item.amount}

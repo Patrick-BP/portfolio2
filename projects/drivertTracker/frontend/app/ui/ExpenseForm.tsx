@@ -148,7 +148,6 @@ const uploadReceiptImage = async (result: any) => {
           name: filename,
           type: mimeType,
         };
-        console.log(fileToUpload)
         // FormData instance
         const formData = new FormData();
         // @ts-ignore

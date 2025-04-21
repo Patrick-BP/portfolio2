@@ -27,7 +27,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import useRequest from '../services/useRequest';
-
+import { BASE_URL } from '@env';
 
 
 const Settings = () => {
@@ -82,10 +82,11 @@ const Settings = () => {
           name: result.data.name || '',
           email: result.data.email || '',
         });
-        setProfileImage(`http://192.168.0.233:3000${result.data.profile_picture}`)
+        setProfileImage(`${BASE_URL.slice(0, -6)}${result.data.profile_picture.slice(1)}`)
         
         if (result.data.profileImageUrl) {
           setProfileImage(result.data.profileImageUrl);
+          console.log('Profile image:', result.data.profileImageUrl);
         }
       } else {
         Alert.alert('Error', result.error || 'Failed to fetch profile data');
@@ -182,27 +183,31 @@ const Settings = () => {
       formData.append('profile_picture', fileToUpload);
       // Get the token for authorization
       const token = await AsyncStorage.getItem('token');
-      const baseUrl = "http://192.168.0.233:3000/api/";
+      
       
       // Make the request
-      const response = await fetch(`${baseUrl}users/me`, {
-        method: 'PATCH',
-        headers: {
-          'Accept': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-          // Note: Don't set Content-Type when sending FormData
-        },
-        body: formData,
-      });
+      // const response = await fetch(`${BASE_URL}users/me`, {
+      //   method: 'PATCH',
+      //   headers: {
+      //     'Accept': 'application/json',
+      //     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      //     // Note: Don't set Content-Type when sending FormData
+      //   },
+      //   body: formData,
+      // });
 
-      
+      const response = await useRequest({
+        action: 'patch',
+        path: 'users',
+        route: 'me',
+        payload: formData,
+      });
       // Check if response is OK
-      if (response.ok) {
+      if (!response.error) {
         // Try to parse as JSON
         try {
-          const responseData = await response.json();
-          if (responseData.profileImageUrl) {
-            setProfileImage(responseData.profileImageUrl);
+          if (response.data.profileImageUrl) {
+            setProfileImage(response.data.profileImageUrl);
           }
           Alert.alert('Success', 'Profile image updated successfully');
         } catch (parseError) {
@@ -213,13 +218,13 @@ const Settings = () => {
           await fetchUserData();
         }
       } else {
-        console.error('Error response:', response.status, response.statusText);
+        console.error('Error response:', response.error);
         
         // Try to get error details
         let errorMsg = 'Failed to upload profile image';
         try {
-          const errorData = await response.json();
-          errorMsg = errorData.msg || errorMsg;
+          const errorData = await response.error;
+          errorMsg = errorData || errorMsg;
         } catch (parseError) {
           // If we can't parse the error as JSON, use a generic message
           console.log('Error response not in JSON format');

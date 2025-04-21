@@ -16,6 +16,6 @@ exports.updateUser = async (req, res) => {
     updateData.profile_picture = `/uploads/profile_pictures/${req.file.filename}`;
   }
 
-  const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true });
+  const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true }).select('-password');
   res.json(user);
 };

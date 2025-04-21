@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
- const baseUrl = "http://192.168.0.233:3000/api/";
-// const baseUrl = "http://localhost:3000/api/";
+import { BASE_URL } from '@env';
+
 
 export type RequestType = {
     action: 'post' | 'get' | 'patch' |'delete'; 
@@ -30,7 +30,7 @@ const useRequest = (config: RequestType): Promise<RequestResult> => {
             };
             
             const { action, payload, path, route, id } = config;
-            const url = `${baseUrl}${path}${route ? `/${route}` : ''}${id ? `/${id}` : ''}`;
+            const url = `${BASE_URL}${path}${route ? `/${route}` : ''}${id ? `/${id}` : ''}`;
            
             const result = await fetch(url, {
                 method: action.toUpperCase(),

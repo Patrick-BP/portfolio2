@@ -38,10 +38,6 @@ const Add = () => {
       
       setIsLoading(false)
       
-     
-      
-
-      
       // Navigate back to dashboard after successful addition
       router.push('/(tabs)/history')
     } catch (error) {
