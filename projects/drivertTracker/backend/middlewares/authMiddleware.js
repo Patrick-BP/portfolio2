@@ -9,6 +9,7 @@ module.exports = async (req, res, next) => {
   try {
    
     const tokenString = token.startsWith('Bearer ') ? token.slice(7) : token;
+    
         
     // Verify the token
     const verified = jwt.verify(tokenString, process.env.JWT_SECRET);
