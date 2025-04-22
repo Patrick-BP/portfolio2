@@ -66,6 +66,5 @@ exports.getVehiclepreviousMileage = async (req, res) => {
   }
   const previousMileage = (await Expense.findOne({ user: req.user.id }).sort({ 
     createdAt: -1 })).current_mileage;
-  console.log(previousMileage);
   res.json(previousMileage);
 };
