@@ -34,16 +34,7 @@ const History = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { logout } = useAuth();
 
-  type Expense = {
-    _id: string;
-    date: Date;
-    category: string;
-    description: string;
-    amount: number;
-    createdAt?: string; // Add createdAt field for sorting
-    receipt?: string | null; // Receipt URL
-  };
-
+ 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
 
@@ -96,7 +87,7 @@ const History = () => {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           }
           // Fall back to sorting by date
-          return b.date.getTime() - a.date.getTime();
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
         });
         
         setExpenses(sortedExpenses);
@@ -126,8 +117,8 @@ const History = () => {
         ? expense.category === selectedCategory
         : true;
 
-      const matchesStart = startDate ? expense.date >= startDate : true;
-      const matchesEnd = endDate ? expense.date <= endDate : true;
+      const matchesStart = startDate ? new Date(expense.date) >= startDate : true;
+      const matchesEnd = endDate ? new Date(expense.date) <= endDate : true;
 
       return matchesSearch && matchesCategory && matchesStart && matchesEnd;
     });
@@ -196,7 +187,7 @@ const History = () => {
         category: updatedExpense.category,
         description: updatedExpense.description,
         amount: updatedExpense.amount,
-        date: updatedExpense.date.toISOString(),
+        date: new Date(updatedExpense.date).toISOString(),
       };
       
       const response = await useRequest({
@@ -299,7 +290,7 @@ const History = () => {
         category={item.category}
         description={item.description}
         amount={item.amount}
-        date={item.date.toDateString()}
+        date={new Date(item.date).toDateString()}
         onEdit={() => handleEdit(item._id)}
         onDelete={() => handleDelete(item._id)}
       />
@@ -543,7 +534,7 @@ const History = () => {
               <Calendar size={20} stroke={isDarkMode ? '#f3f4f6' : '#4b5563'} />
             </View>
             <Text className={`text-base font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              {expenseDetails.date.toDateString()}
+              {new Date(expenseDetails.date).toDateString()}
             </Text>
           </View>
 
@@ -650,27 +641,14 @@ const History = () => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
       {/* Edit Modal */}
       {isModalVisible && selectedExpense && (
         <EditExpenseModal
           visible={isModalVisible}
           onClose={() => setModalVisible(false)}
-          expenses={{ ...selectedExpense, date: selectedExpense.date.toISOString() }}
+          expenses={{ ...selectedExpense, date: selectedExpense.date }}
           onSaved={(updatedExpense) =>
-            handleSave({ ...updatedExpense, date: new Date(updatedExpense.date) })
+            handleSave({ ...updatedExpense, date: new Date(updatedExpense.date).toISOString() })
           }
         />
       )}

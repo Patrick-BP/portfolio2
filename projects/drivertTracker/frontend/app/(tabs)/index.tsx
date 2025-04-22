@@ -105,6 +105,7 @@ console.log(response.data);
   useFocusEffect(
     useCallback(() => {
       fetchExpenses();
+      fetchMonthlyReports(); 
     }, [])
   );
 

@@ -37,9 +37,6 @@ exports.addExpense = async (req, res) => {
   }
 };
 
-
-
-
 exports.getExpenses = async (req, res) => {
   const expenses = await Expense.find({ user: req.user.id });
   res.json(expenses);
@@ -67,6 +64,8 @@ exports.getVehiclepreviousMileage = async (req, res) => {
   if (!vehicle) {
     return res.status(404).json({ msg: 'Vehicle not found' });
   }
-  const previousMileage = (await Expense.findOne({ user: req.user.id }).sort({ date: -1 })).current_mileage;
+  const previousMileage = (await Expense.findOne({ user: req.user.id }).sort({ 
+    createdAt: -1 })).current_mileage;
+  console.log(previousMileage);
   res.json(previousMileage);
 };

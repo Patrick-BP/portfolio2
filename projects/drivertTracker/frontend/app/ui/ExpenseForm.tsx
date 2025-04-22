@@ -14,27 +14,6 @@ import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import useRequest from '../services/useRequest';
 
-interface ExpenseFormProps {
-  onSubmit: (expense: {
-    category: string;
-    date: string;
-    description: string;
-    amount: number;
-    current_mileage?: number;
-    previous_mileage?: number;
-    gallons?: number;
-    receipt?: any;
-  }) => void;
-  initialValues?: {
-    category: string;
-    date: string;
-    description: string;
-    amount: number;
-    current_mileage?: number;
-    previous_mileage?: number;
-    gallons?: number;
-  };
-}
 
 const categories = [
   'Fuel',
@@ -74,7 +53,17 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
       }
     })
     
-  }, []);
+  }, [category ]);
+
+  useEffect(() => {
+    if (category != 'Fuel') {
+      setAmount('');
+      setDescription('');
+      setOdometer( '');
+      setPreviousOdometer( '');
+      setGallons( '');
+    }
+  }, [category]);
 
   const tripDistance =
     odometer && previousOdometer
@@ -110,9 +99,9 @@ const ExpenseForm = ({ onSubmit, initialValues }: ExpenseFormProps) => {
       description,
       amount: parseFloat(amount),
       receipt: receipt || undefined,
-      current_mileage: odometer ? parseFloat(odometer) : undefined,
-      previous_mileage: previousOdometer ? parseFloat(previousOdometer) : undefined,
-      gallons: gallons ? parseFloat(gallons) : undefined,
+      current_mileage: category === 'Fuel' ? parseFloat(odometer) : undefined,
+      previous_mileage:  category === 'Fuel' ? parseFloat(previousOdometer) : undefined,
+      gallons:  category === 'Fuel' ? parseFloat(gallons) : undefined,
     });
 
 
@@ -210,7 +199,6 @@ const uploadReceiptImage = async (result: any) => {
               value={previousOdometer?.toString() || ''}
               onChangeText={setPreviousOdometer}
               placeholder="Previous mileage"
-              editable={false}
             />
           </View>
           <View>
