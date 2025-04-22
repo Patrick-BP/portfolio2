@@ -179,3 +179,13 @@ exports.getMileageDetails = async (req, res) => {
     res.status(500).json({ message: 'Failed to load mileage details.' });
   }
 };
+
+exports.getMonthlyComparison = async (req, res) => {
+  try {
+    const data = await getSummaryByPeriod(req.user.id, 'month', true);
+    res.json(data);
+  } catch (err) {
+    console.error('Monthly comparison error:', err);
+    res.status(500).json({ message: 'Failed to load monthly comparison data.' });
+  }
+};

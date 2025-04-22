@@ -16,5 +16,8 @@ router.get('/yearly', reportController.getYearlySummary);
 router.get('/categories', reportController.getTopCategories);
 router.get('/efficiency', reportController.getFuelEfficiencyStats);
 router.get('/mileage-details', reportController.getMileageDetails);
+router.get('/monthly-with-comparison', reportController.getMonthlyComparison);
+
+
 
 module.exports = router;
