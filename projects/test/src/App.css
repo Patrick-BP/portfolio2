@@ -1,0 +1,22 @@
+.App {
+    padding: 2rem;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.p-datatable {
+    margin-top: 1rem;
+}
+
+.p-input-icon-left {
+    width: 300px;
+}
+
+.p-input-icon-left input {
+    width: 100%;
+}

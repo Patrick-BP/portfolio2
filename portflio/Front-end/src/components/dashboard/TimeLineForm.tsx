@@ -17,12 +17,12 @@ export const TimelineForm = () => {
 
   useEffect(() => {
     // fetch timeline items from database
-    fetchTimeLine().then(data => setTimelineItems(data));
+    fetchTimeLine().then((data: TimelineItem[]) => setTimelineItems(data));
   }, []);
 
   const handleAddTimelineItem = () => {
     const newItem: TimelineItem = {
-      _id: null,
+      _id: '',
       order: timelineItems.length + 1,
       dateRange: '',
       title: '',
@@ -79,7 +79,7 @@ export const TimelineForm = () => {
     } catch (error) {
       toast({
         title: "Error saving timeline",
-        description: error.response.data.message,
+        description: error instanceof Error ? error.message : 'An unexpected error occurred',
         variant: "destructive",
       });
       console.error('Error saving timeline:', error);
@@ -95,17 +95,17 @@ export const TimelineForm = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {timelineItems.sort((a, b) => a.order - b.order).map((item, index) => (
+          {timelineItems.sort((a, b) => (a.order || 0) - (b.order || 0)).map((item, index) => (
             <div key={item._id} className="space-y-4 p-4 border rounded-md">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium">Timeline Entry {index + 1}</h3>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
+                <button
+                  data-testid={`delete-timeline-${item._id}`}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-10 w-10"
                   onClick={() => handleRemoveTimelineItem(index, item._id)}
                 >
                   <Trash className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
               <div className="grid gap-4 sm:grid-cols-7">
                  <div>

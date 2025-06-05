@@ -36,7 +36,7 @@ const Hero = () => {
   }, []);
  
   return (
-    <section 
+    <header 
       id="home" 
       ref={sectionRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
@@ -84,7 +84,7 @@ const Hero = () => {
       {/* Decorative elements */}
       <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl opacity-50 parallax" data-speed="2"></div>
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-3xl opacity-50 parallax" data-speed="3"></div>
-    </section>
+    </header>
   );
 };
 

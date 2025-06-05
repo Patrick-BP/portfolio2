@@ -16,7 +16,7 @@ const app = express();
 app.use(express.json());  // Make sure this is before routes
 app.use(express.urlencoded({ extended: true })); // For parsing URL-encoded data
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 6000;
 app.use(cors());
 app.use(bodyParser.json()); // Removed global JSON parser - apply specifically where needed
 app.use('/public', express.static(path.join(__dirname, '/public'))); // Serve static files from uploads directory

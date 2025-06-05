@@ -157,12 +157,14 @@ export const SkillsForm = () => {
           {skills.map((skill, index) => (
             <div key={skill._id || `new-${index}`} className="space-y-2 p-4 border rounded-md">
               <div className="flex justify-between items-center">
-                <Input
-                  placeholder="Skill name"
-                  value={skill.name}
-                  onChange={(e) => handleSkillChange(index, 'name', e.target.value)}
-                  className="w-full max-w-sm"
-                />
+                <label htmlFor={`skill-name-${index}`} className="block text-sm font-medium mb-1">Skill</label>
+<Input
+  id={`skill-name-${index}`}
+  placeholder="Add skill"
+  value={skill.name}
+  onChange={(e) => handleSkillChange(index, 'name', e.target.value)}
+  className="w-full max-w-sm"
+/>
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -186,7 +188,7 @@ export const SkillsForm = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                <span className="text-sm min-w-24">Icon:</span>
+                <label htmlFor={`category-${index}`} className="block text-sm font-medium mb-1">Category</label>
                 <Select 
                   value={skill.icon || 'Code'}
                   onValueChange={(value) => handleSkillChange(index, 'icon', value)}

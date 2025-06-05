@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const { data } = await axios.post("http://localhost:3000/api/auth/register", { name, email, password }).then((response) => {
+      const { data } = await axios.post("http://localhost:5000/api/auth/register", { name, email, password }).then((response) => {
         if (response.status === 201) {
 
           return response.data;
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, navigate) => {
     try {
-       await axios.post("http://localhost:3000/api/auth/login", { email, password }).then((response) => {
+       await axios.post("http://localhost:5000/api/auth/login", { email, password }).then((response) => {
         if (response.status === 200) { 
           localStorage.setItem("user", JSON.stringify({name:response.data.name, email:response.data.email}));
           localStorage.setItem("token", response.data.token);

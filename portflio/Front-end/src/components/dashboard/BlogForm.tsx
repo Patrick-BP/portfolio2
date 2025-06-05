@@ -45,17 +45,19 @@ export const BlogForm = () => {
   
 
   useEffect(() => {
-    fetchPosts().then((data) => {
-        setLoading(true);
+    setLoading(true);
+    fetchPosts()
+      .then((data) => {
         setPosts(data || []);
-    
-    }).catch((error) => {
-      console.error('Error fetching projects:', error);
-      toast.error('Failed to load projects');
-    }).finally(() => {
-      setLoading(false);
-    });
-    }, [refreshData]);
+      })
+      .catch((error) => {
+        console.error('Error fetching blog posts:', error);
+        toast.error('Failed to load blog posts');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [refreshData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -127,75 +129,77 @@ export const BlogForm = () => {
 
       if (editingId) {
         // Update existing post
-        const updateData: any = {
-          title: formData.title,
-          content: formData.content,
-          excerpt: formData.excerpt,
-          tags,
-          published: formData.published,
-          readTime: formData.readTime,
-        };
-
+        let updateData: any;
         if (imageFile) {
-          updateData.thumbnail = imageFile;
+          updateData = new FormData();
+          updateData.append('title', formData.title);
+          updateData.append('content', formData.content);
+          updateData.append('excerpt', formData.excerpt);
+          updateData.append('tags', JSON.stringify(tags));
+          updateData.append('published', String(formData.published));
+          updateData.append('readTime', String(formData.readTime));
+          updateData.append('thumbnail', imageFile);
+          if (formData.published) {
+            updateData.append('publishedAt', new Date().toISOString());
+          }
+        } else {
+          updateData = {
+            title: formData.title,
+            content: formData.content,
+            excerpt: formData.excerpt,
+            tags,
+            published: formData.published,
+            readTime: formData.readTime,
+          };
+          if (formData.published) {
+            updateData.publishedAt = new Date().toISOString();
+          }
         }
 
-        if(formData.published){
-          updateData.publishedAt = new Date().toISOString(); // Set published date to now
-        }
-
-       updatePost(editingId, updateData).then(async () => {
-        setRefreshData(!refreshData); 
+        await updatePost(editingId, updateData);
+        setRefreshData(r => !r);
         toast.success('Blog post updated successfully');
-        setEditingId(null); // Reset editing ID after successful update
+        setEditingId(null);
         resetForm();
-       }).catch((error) => {
-        
-        console.error('Error updating post:', error);
-        toast.error(error.response.data.message);
-       });
       } else {
         // Create new post
-        const newPost: any ={
-          title: formData.title,
-          content: formData.content,
-          excerpt: formData.excerpt,
-          tags,
-          published: formData.published,
-          readTime: formData.readTime,
-
-        };
-
+        let newPost: any;
         if (imageFile) {
-          newPost.thumbnail = imageFile;
+          newPost = new FormData();
+          newPost.append('title', formData.title);
+          newPost.append('content', formData.content);
+          newPost.append('excerpt', formData.excerpt);
+          newPost.append('tags', JSON.stringify(tags));
+          newPost.append('published', String(formData.published));
+          newPost.append('readTime', String(formData.readTime));
+          newPost.append('thumbnail', imageFile);
+          if (formData.published) {
+            newPost.append('publishedAt', new Date().toISOString());
+          }
+        } else {
+          newPost = {
+            title: formData.title,
+            content: formData.content,
+            excerpt: formData.excerpt,
+            tags,
+            published: formData.published,
+            readTime: formData.readTime,
+          };
+          if (formData.published) {
+            newPost.publishedAt = new Date().toISOString();
+          }
         }
-        if(formData.published){
-          newPost.publishedAt = new Date().toISOString(); // Set published date to now
-        }
-        createPost(newPost).then(() => { // Pass the modified data object
-          setRefreshData(!refreshData); // Toggle refresh state
-          toast.success('Post added successfully');
-          resetForm();
-        }).catch((error) => {
-          
-          console.error('Error adding post:', error);
-          toast.error(error.response.data.message);
-        }).finally(() => {
-          setSaving(false);
-        });
-        }
-  
-        
-        
-      } catch (error) {
-        
-        console.error('Error saving post:', error);
-        toast.error(error.response.data.message);
-      } finally {
-        setSaving(false);
+        await createPost(newPost);
+        setRefreshData(r => !r);
+        toast.success('Post added successfully');
+        resetForm();
       }
-
-    
+    } catch (error: any) {
+      console.error('Error saving post:', error);
+      toast.error(error?.response?.data?.message || error.message || 'Unknown error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleEdit = (post: BlogPost) => {
@@ -228,10 +232,20 @@ export const BlogForm = () => {
       toast.success('Blog post deleted successfully');
       setRefreshData(!refreshData); // Toggle refresh state
       
-    } catch (error) {
-      
+    } catch (error: unknown) {
+      const message =
+        (typeof error === 'object' &&
+          error &&
+          'response' in error &&
+          error.response &&
+          'data' in (error as any).response &&
+          'message' in (error as any).response.data)
+          ? (error as any).response.data.message
+          : error instanceof Error
+            ? error.message
+            : 'Error deleting blog post';
+      toast.error(message);
       console.error('Error deleting blog post:', error);
-      toast.error(error.response.data.message);
     }
   };
 
@@ -292,7 +306,7 @@ export const BlogForm = () => {
              {/* Image Upload and Preview */}
              <div className="space-y-2">
               <label htmlFor="image" className="text-sm font-medium">
-                Project Image
+                Blog Image
               </label>
               <div className="flex items-center gap-4">
                 {/* Image Preview */}
@@ -429,7 +443,7 @@ export const BlogForm = () => {
                       </div>
                     )}
                     <div className="md:w-3/4">
-                      <h3 className="text-xl font-bold mb-2">{post.title}</h3>
+                      <h3 className="text-xl font-bold mb-2" data-testid={`post-title-${post._id}`}>{post.title}</h3>
                       <p className="text-muted-foreground mb-2">{post.excerpt}</p>
                       <div className="flex flex-wrap gap-1 mb-4">
                         {post.tags.map((tag, i) => (
@@ -454,6 +468,7 @@ export const BlogForm = () => {
                           <Button
                             variant="outline"
                             size="sm"
+                            data-testid={`edit-post-${post._id}`}
                             onClick={() => handleEdit(post)}
                           >
                             <Edit className="h-4 w-4 mr-1" /> Edit
@@ -461,6 +476,7 @@ export const BlogForm = () => {
                           <Button
                             variant="destructive"
                             size="sm"
+                            data-testid={`delete-post-${post._id}`}
                             onClick={() => handleDelete(post._id)}
                           >
                             <Trash2 className="h-4 w-4 mr-1" /> Delete
@@ -477,7 +493,7 @@ export const BlogForm = () => {
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-bold">[{posts.length}] Published Posts</h2>
+        <h2 className="text-xl font-bold">[{posts.filter(post => post.published).length}] Published Posts</h2>
         {loading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -502,7 +518,7 @@ export const BlogForm = () => {
                       </div>
                     )}
                     <div className="md:w-3/4">
-                      <h3 className="text-xl font-bold mb-2">{post.title}</h3>
+                      <h3 className="text-xl font-bold mb-2" data-testid={`post-title-${post._id}`}>{post.title}</h3>
                       <p className="text-muted-foreground mb-2">{post.excerpt}</p>
                       <div className="flex flex-wrap gap-1 mb-4">
                         {post.tags.map((tag, i) => (
@@ -527,6 +543,7 @@ export const BlogForm = () => {
                           <Button
                             variant="outline"
                             size="sm"
+                            data-testid={`edit-post-${post._id}`}
                             onClick={() => handleEdit(post)}
                           >
                             <Edit className="h-4 w-4 mr-1" /> Edit
@@ -534,6 +551,7 @@ export const BlogForm = () => {
                           <Button
                             variant="destructive"
                             size="sm"
+                            data-testid={`delete-post-${post._id}`}
                             onClick={() => handleDelete(post._id)}
                           >
                             <Trash2 className="h-4 w-4 mr-1" /> Delete

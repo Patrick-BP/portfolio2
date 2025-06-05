@@ -1,7 +1,7 @@
 
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000/api";
+const BASE_URL = "http://localhost:5000/api";
 const headers = {
     "Content-Type": "application/json",
     "Authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -12,7 +12,7 @@ const headers = {
 const fetchUsers = async ()=>{
     try {
         const response = await axios.get(`${BASE_URL}/users`);
-        return response.data.data[0];
+        return response.data?.data[0];
 
     } catch (error) {
         console.error('Error fetching user:', error);
@@ -28,16 +28,16 @@ const fetchUsers = async ()=>{
 const fetchSkills = async ()=>{
     try {
         const response = await axios.get(`${BASE_URL}/skills`);
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error fetching skills:', error);
         throw error;
     }
 };
-const updateSkill = async (id, updatedSkill)=>{
+const updateSkill = async (idtring, updatedSkill)=>{
     try {
         const response = await axios.patch(`${BASE_URL}/skills/${id}`,updatedSkill, {headers});
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error updating skill:', error);
         throw error;
@@ -47,7 +47,7 @@ const deleteSkill = async (id)=>{
     try {
         const response = await axios.delete(`${BASE_URL}/skills/${id}`,{headers});
         // Check if the response is successful
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error deleting skill:', error);
         throw error;
@@ -56,7 +56,7 @@ const deleteSkill = async (id)=>{
 const createSkill = async (newSkill)=>{
     try {
         const response = await axios.post(`${BASE_URL}/skills`, newSkill, {headers});
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error creating skill:', error);
         throw error;
@@ -69,7 +69,7 @@ const createSkill = async (newSkill)=>{
 const fetchProfile = async ()=>{
     try {
         const response = await axios.get(`${BASE_URL}/profiles/`);
-        return response.data.data[0];
+        return response.data?.data[0];
     } catch (error) {
         console.error('Error fetching profile:', error);
         throw error;
@@ -82,7 +82,7 @@ const updateProfile = async (id, updateData)=>{
             'Content-Type': 'multipart/form-data',
             "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },}  );
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error updating profile:', error);
         throw error;
@@ -97,7 +97,7 @@ const updateProfile = async (id, updateData)=>{
 const fetchProjects = async ()=>{
     try {
         const response = await axios.get(`${BASE_URL}/projects`);
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error fetching projects:', error);
         throw error;
@@ -139,7 +139,7 @@ const updateProject = async (id, updateData) => {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error updating project:', error.response?.data || error.message);
         throw error;
@@ -148,7 +148,7 @@ const updateProject = async (id, updateData) => {
 const deleteProject = async (id)=>{
     try {
         const response = await axios.delete(`${BASE_URL}/projects/${id}`,{headers});
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error deleting project:', error);
         throw error;
@@ -185,7 +185,7 @@ const createProject = async (projectData) => {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error creating project:', error.response?.data || error.message);
         throw error;
@@ -198,7 +198,7 @@ const createProject = async (projectData) => {
 const fetchPosts = async ()=>{
     try {
         const response = await axios.get(`${BASE_URL}/blogposts`);
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error fetching posts:', error);
         throw error;
@@ -207,7 +207,7 @@ const fetchPosts = async ()=>{
 const fetchPost = async (id)=>{
     try {
         const response = await axios.get(`${BASE_URL}/blogposts/${id}`);
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error fetching post:', error);
         throw error;
@@ -221,7 +221,7 @@ const updatePost = async (id, updatedPost)=>{
                 "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error updating post:', error);
         throw error;
@@ -231,7 +231,7 @@ const updatePost = async (id, updatedPost)=>{
 const deletePost = async (id)=>{
     try {
         const response = await axios.delete(`${BASE_URL}/blogposts/${id}`,{headers});
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error deleting post:', error);
         throw error;
@@ -244,7 +244,7 @@ const createPost = async (newPost)=>{
                 'Content-Type': 'multipart/form-data', // Important for file uploads
                 "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },});
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error creating post:', error);
         throw error;
@@ -258,7 +258,7 @@ const createPost = async (newPost)=>{
 const fetchTimeLine = async ()=>{
     try {
         const response = await axios.get(`${BASE_URL}/timeline`);
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error fetching timeline:', error);
         throw error;
@@ -272,7 +272,7 @@ const updateTimeLine = async (timelineItems)=>{
                 "Authorization": `Bearer ${localStorage.getItem("token")}`,
             },
         });
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error updating timeline:', error);
         throw error;
@@ -281,7 +281,7 @@ const updateTimeLine = async (timelineItems)=>{
 const deleteTimeLine = async (id)=>{
     try {
         const response = await axios.delete(`${BASE_URL}/timeline/${id}`);
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error deleting timeline:', error);
         throw error;
@@ -293,7 +293,7 @@ const deleteTimeLine = async (id)=>{
 const createMessage = async (newMessage)=>{
     try {
         const response = await axios.post(`${BASE_URL}/contactmessages`, newMessage, { headers});
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error creating message:', error);
         throw error;
@@ -303,7 +303,7 @@ const createMessage = async (newMessage)=>{
 const fetchMessages = async ()=>{
     try {
         const response = await axios.get(`${BASE_URL}/contactmessages`, { headers});
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error fetching messages:', error);
         throw error;
@@ -314,7 +314,7 @@ const updateMessage = async (id, data)=>{
     try {
         const response = await axios.patch(`${BASE_URL}/contactmessages/${id}`, data, { headers});
         
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error updating message:', error);
         throw error;
@@ -324,7 +324,7 @@ const updateMessage = async (id, data)=>{
 const deleteMessage = async (id)=>{
     try {
         const response = await axios.delete(`${BASE_URL}/contactmessages/${id}`, { headers});
-        return response.data.data;
+        return response.data?.data;
     } catch (error) {
         console.error('Error deleting message:', error);
         throw error;
